@@ -1,0 +1,111 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BeginTransaction	DBConnect.cpp	/^	bool CDBConnect::BeginTransaction()$/;"	f	class:DB::CDBConnect
+CAtomTransaction	DBConnect.cpp	/^	CAtomTransaction::CAtomTransaction(CDBConnectPtr pDBConnect)$/;"	f	class:DB::CAtomTransaction
+CAtomTransaction	include/DBConnect.h	/^	class CAtomTransaction$/;"	c	namespace:DB
+CC	Makefile	/^CC := g++ -std=c++11$/;"	m
+CDBConnPool	DBConnPool.cpp	/^	CDBConnPool::CDBConnPool(const DBInfo& dbInfo) : m_dbInfo(dbInfo), m_maxConnectID(0)$/;"	f	class:DB::CDBConnPool
+CDBConnPool	include/DBConnPool.h	/^	class CDBConnPool$/;"	c	namespace:DB
+CDBConnPoolPtr	include/DBConnPool.h	/^	typedef std::shared_ptr<CDBConnPool> CDBConnPoolPtr;$/;"	t	namespace:DB
+CDBConnect	DBConnect.cpp	/^	CDBConnect::CDBConnect(const DBInfo& dbInfo) : m_charSet("gbk"), m_dbInfo(dbInfo), m_connectState(DISCONNECTED)$/;"	f	class:DB::CDBConnect
+CDBConnect	include/DBConnect.h	/^	class CDBConnect$/;"	c	namespace:DB
+CDBConnectPtr	include/DBConnectHelper.h	/^	typedef std::shared_ptr<CDBConnect> CDBConnectPtr;$/;"	t	namespace:DB
+CDBRecordSet	DBConnect.cpp	/^	CDBRecordSet::CDBRecordSet() : m_sqlRes(nullptr)$/;"	f	class:DB::CDBRecordSet
+CDBRecordSet	include/DBConnect.h	/^	class CDBRecordSet$/;"	c	namespace:DB
+CONNECTED	DBConnect.cpp	16;"	d	file:
+CR_SERVER_GONE_ERROR	DBConnect.cpp	13;"	d	file:
+CR_SERVER_LOST	DBConnect.cpp	11;"	d	file:
+CXXFLAGS	Makefile	/^CXXFLAGS := -I .\/include$/;"	m
+Close	DBConnect.cpp	/^	void CDBConnect::Close()$/;"	f	class:DB::CDBConnect
+Commit	DBConnect.cpp	/^	bool CDBConnect::Commit()$/;"	f	class:DB::CDBConnect
+Connect	DBConnect.cpp	/^	int CDBConnect::Connect()$/;"	f	class:DB::CDBConnect
+ConnectInfo	include/DBConnectPoolHelper.h	/^	}ConnectInfo, *PConnectInfo;$/;"	t	namespace:DB	typeref:struct:DB::ConnectInfo_
+ConnectInfo_	include/DBConnectPoolHelper.h	/^		ConnectInfo_() :$/;"	f	struct:DB::ConnectInfo_
+ConnectInfo_	include/DBConnectPoolHelper.h	/^	typedef struct ConnectInfo_$/;"	s	namespace:DB
+Count	DBConnect.cpp	/^	size_t CDBRecordSet::Count()$/;"	f	class:DB::CDBRecordSet
+CreateConnection	DBConnPool.cpp	/^	CDBConnectPtr CDBConnPool::CreateConnection()$/;"	f	class:DB::CDBConnPool
+DB	DBConnPool.cpp	/^namespace DB {$/;"	n	file:
+DB	DBConnect.cpp	/^namespace DB {$/;"	n	file:
+DB	include/DBConnPool.h	/^namespace DB {$/;"	n
+DB	include/DBConnect.h	/^namespace DB{$/;"	n
+DB	include/DBConnectHelper.h	/^namespace DB {$/;"	n
+DB	include/DBConnectPoolHelper.h	/^namespace DB {$/;"	n
+DBErrorInfo	include/DBConnectHelper.h	/^	}DBErrorInfo, *PDBErrorInfo;$/;"	t	namespace:DB	typeref:struct:DB::DBErrorInfo_
+DBErrorInfo_	include/DBConnectHelper.h	/^		DBErrorInfo_() :$/;"	f	struct:DB::DBErrorInfo_
+DBErrorInfo_	include/DBConnectHelper.h	/^	typedef struct DBErrorInfo_$/;"	s	namespace:DB
+DBInfo	include/DBConnectHelper.h	/^	}DBInfo, *PDBInfo;$/;"	t	namespace:DB	typeref:struct:DB::DBInfo_
+DBInfo_	include/DBConnectHelper.h	/^		DBInfo_() :$/;"	f	struct:DB::DBInfo_
+DBInfo_	include/DBConnectHelper.h	/^	typedef struct DBInfo_$/;"	s	namespace:DB
+DISCONNECTED	DBConnect.cpp	18;"	d	file:
+DestoryConnection	DBConnPool.cpp	/^	int CDBConnPool::DestoryConnection()$/;"	f	class:DB::CDBConnPool
+ERR_DB_NOERR	DBConnect.cpp	9;"	d	file:
+Execute	DBConnect.cpp	/^	int CDBConnect::Execute(const std::string& sql)$/;"	f	class:DB::CDBConnect
+GetBusyNum	DBConnPool.cpp	/^	size_t CDBConnPool::GetBusyNum()$/;"	f	class:DB::CDBConnPool
+GetConnection	DBConnPool.cpp	/^	bool CDBConnPool::GetConnection(ConnectInfo& connectInfo)$/;"	f	class:DB::CDBConnPool
+GetDouble	DBConnect.cpp	/^	double CDBRecordSet::GetDouble(int valueKey)$/;"	f	class:DB::CDBRecordSet
+GetFreeNum	DBConnPool.cpp	/^	size_t CDBConnPool::GetFreeNum()$/;"	f	class:DB::CDBConnPool
+GetInt	DBConnect.cpp	/^	int CDBRecordSet::GetInt(int valueKey)$/;"	f	class:DB::CDBRecordSet
+GetLastError	DBConnect.cpp	/^	DBErrorInfo CDBConnect::GetLastError()$/;"	f	class:DB::CDBConnect
+GetNextRow	DBConnect.cpp	/^	bool CDBRecordSet::GetNextRow()$/;"	f	class:DB::CDBRecordSet
+GetString	DBConnect.cpp	/^	std::string CDBRecordSet::GetString(int valueKey)$/;"	f	class:DB::CDBRecordSet
+InitConnection	DBConnPool.cpp	/^	size_t CDBConnPool::InitConnection(int minSize, int maxSize)$/;"	f	class:DB::CDBConnPool
+LDFLAGS	Makefile	/^LDFLAGS := -L \/usr\/lib64\/mysql$/;"	m
+LDLIBS	Makefile	/^LDLIBS := -l mysqlclient$/;"	m
+ModCharSet	DBConnect.cpp	/^	bool CDBConnect::ModCharSet(const std::string& charSet)$/;"	f	class:DB::CDBConnect
+Mutex	include/cmutex.h	/^class Mutex$/;"	c
+OBJS	Makefile	/^OBJS := DBConnect.o DBConnPool.o$/;"	m
+PConnectInfo	include/DBConnectPoolHelper.h	/^	}ConnectInfo, *PConnectInfo;$/;"	t	namespace:DB	typeref:struct:DB::ConnectInfo_
+PDBErrorInfo	include/DBConnectHelper.h	/^	}DBErrorInfo, *PDBErrorInfo;$/;"	t	namespace:DB	typeref:struct:DB::DBErrorInfo_
+PDBInfo	include/DBConnectHelper.h	/^	}DBInfo, *PDBInfo;$/;"	t	namespace:DB	typeref:struct:DB::DBInfo_
+ReleaseConnection	DBConnPool.cpp	/^	void CDBConnPool::ReleaseConnection(ConnectInfo& connectInfo)$/;"	f	class:DB::CDBConnPool
+ReleaseConnection	DBConnPool.cpp	/^	void CDBConnPool::ReleaseConnection(size_t connectId)$/;"	f	class:DB::CDBConnPool
+RollBack	DBConnect.cpp	/^	bool CDBConnect::RollBack()$/;"	f	class:DB::CDBConnect
+SRCS	Makefile	/^SRCS := DBConnect.cpp DBConnPool.cpp$/;"	m
+Select	DBConnect.cpp	/^	int CDBConnect::Select(const std::string& sql, CDBRecordSet& dbRecordSet, bool quick_mode\/* = false*\/)$/;"	f	class:DB::CDBConnect
+SetCommit	DBConnect.cpp	/^	void CAtomTransaction::SetCommit()$/;"	f	class:DB::CAtomTransaction
+SetSqlRes	DBConnect.cpp	/^	void CDBRecordSet::SetSqlRes(MYSQL_RES* sqlRes)$/;"	f	class:DB::CDBRecordSet
+TARGET	Makefile	/^TARGET := dbpool.so$/;"	m
+dbName	include/DBConnectHelper.h	/^		std::string dbName;$/;"	m	struct:DB::DBInfo_
+errorInfo	include/DBConnectHelper.h	/^		std::string errorInfo;$/;"	m	struct:DB::DBErrorInfo_
+getConnectID	DBConnect.cpp	/^	size_t CDBConnect::getConnectID()$/;"	f	class:DB::CDBConnect
+ip	include/DBConnectHelper.h	/^		std::string ip;$/;"	m	struct:DB::DBInfo_
+isEof	DBConnect.cpp	/^	bool CDBRecordSet::isEof()$/;"	f	class:DB::CDBRecordSet
+isFree	include/DBConnectPoolHelper.h	/^		bool isFree;$/;"	m	struct:DB::ConnectInfo_
+lock	include/cmutex.h	/^	void lock() { m_mutex.lock(); }$/;"	f	class:Mutex
+m_charSet	include/DBConnect.h	/^		std::string m_charSet;$/;"	m	class:DB::CDBConnect
+m_connectID	include/DBConnect.h	/^		size_t m_connectID;$/;"	m	class:DB::CDBConnect
+m_connectState	include/DBConnect.h	/^		int m_connectState;$/;"	m	class:DB::CDBConnect
+m_dbConnList	include/DBConnPool.h	/^		std::list<ConnectInfo> m_dbConnList;$/;"	m	class:DB::CDBConnPool
+m_dbInfo	include/DBConnPool.h	/^		DBInfo m_dbInfo;$/;"	m	class:DB::CDBConnPool
+m_dbInfo	include/DBConnect.h	/^		DBInfo m_dbInfo;$/;"	m	class:DB::CDBConnect
+m_errorInfo	include/DBConnect.h	/^		DBErrorInfo m_errorInfo;$/;"	m	class:DB::CDBConnect
+m_isCommit	include/DBConnect.h	/^		bool m_isCommit;$/;"	m	class:DB::CAtomTransaction
+m_maxConnectID	include/DBConnPool.h	/^		size_t m_maxConnectID;$/;"	m	class:DB::CDBConnPool
+m_maxSize	include/DBConnPool.h	/^		int m_maxSize;$/;"	m	class:DB::CDBConnPool
+m_minSize	include/DBConnPool.h	/^		int m_minSize;$/;"	m	class:DB::CDBConnPool
+m_mtx	include/cmutex.h	/^	Mutex& m_mtx;$/;"	m	class:scoped_lock
+m_mutex	include/DBConnPool.h	/^		Mutex m_mutex;$/;"	m	class:DB::CDBConnPool
+m_mutex	include/cmutex.h	/^	std::mutex m_mutex;$/;"	m	class:Mutex
+m_pDBConnect	include/DBConnect.h	/^		CDBConnectPtr m_pDBConnect;$/;"	m	class:DB::CAtomTransaction
+m_pDBConnect	include/DBConnect.h	/^		MYSQL* m_pDBConnect;$/;"	m	class:DB::CDBConnect
+m_resRow	include/DBConnect.h	/^		MYSQL_ROW m_resRow;$/;"	m	class:DB::CDBRecordSet
+m_sqlRes	include/DBConnect.h	/^		MYSQL_RES *m_sqlRes;$/;"	m	class:DB::CDBRecordSet
+main	test/test.cpp	/^int main(){$/;"	f
+pDBConnect	include/DBConnectPoolHelper.h	/^		CDBConnectPtr pDBConnect;$/;"	m	struct:DB::ConnectInfo_
+port	include/DBConnectHelper.h	/^		int port;$/;"	m	struct:DB::DBInfo_
+pwd	include/DBConnectHelper.h	/^		std::string pwd;$/;"	m	struct:DB::DBInfo_
+scoped_lock	include/cmutex.h	/^	scoped_lock(Mutex& mtx) : m_mtx(mtx) { m_mtx.lock(); }$/;"	f	class:scoped_lock
+scoped_lock	include/cmutex.h	/^class scoped_lock$/;"	c
+setConnectID	DBConnect.cpp	/^	void CDBConnect::setConnectID(size_t connectID)$/;"	f	class:DB::CDBConnect
+type	include/DBConnectHelper.h	/^		int type;$/;"	m	struct:DB::DBErrorInfo_
+unlock	include/cmutex.h	/^	void unlock() { m_mutex.unlock(); }$/;"	f	class:Mutex
+userName	include/DBConnectHelper.h	/^		std::string userName;$/;"	m	struct:DB::DBInfo_
+~CAtomTransaction	DBConnect.cpp	/^	CAtomTransaction::~CAtomTransaction()$/;"	f	class:DB::CAtomTransaction
+~CDBConnPool	DBConnPool.cpp	/^	CDBConnPool::~CDBConnPool()$/;"	f	class:DB::CDBConnPool
+~CDBConnect	DBConnect.cpp	/^	CDBConnect::~CDBConnect()$/;"	f	class:DB::CDBConnect
+~CDBRecordSet	DBConnect.cpp	/^	CDBRecordSet::~CDBRecordSet()$/;"	f	class:DB::CDBRecordSet
+~scoped_lock	include/cmutex.h	/^	~scoped_lock() { m_mtx.unlock(); }$/;"	f	class:scoped_lock
