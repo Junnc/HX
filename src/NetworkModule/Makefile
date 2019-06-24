@@ -9,9 +9,11 @@ TARGET = libhxnet.so
 
 $(TARGET) : $(OBJS)
 	$(CXX) -shared -o $(TARGET) $^ $(CFLAGS)
+	mv $(TARGET) ../../lib
 
 %.o : %.cpp
 	$(CXX) -fPIC -c $< -o $@ $(CFLAGS)
 
 clean:
 	rm $(TARGET) $(OBJS) -rf
+	rm ../../lib/$(TARGET)
