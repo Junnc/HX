@@ -1,2 +1,2 @@
-# hx
+# HX
 HX New Future
