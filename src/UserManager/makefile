@@ -3,7 +3,8 @@ HXBASE = $(shell cd ../..; pwd)
 HXSRC = $(HXBASE)/src
 HXLIB = $(HXBASE)/lib
 
-INCLUDE_PATH := -I ../mysqlConnectPool/include -I ../common/utils
+INCLUDE_PATH := -I ../mysqlConnectPool/include -I ../common/utils -I ../common/queue \
+		-I ../common -I ../common/net
 TARGET := libUserManager.so
 
 OBJS :=  CacheUserAllInfo.o DBOperator.o \
