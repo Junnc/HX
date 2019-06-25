@@ -2,7 +2,7 @@
 
 #include <thread>
 
-#include "../common/log4cxx/hx_log4cxx.h"
+#include "common/log4cxx/hx_log4cxx.h"
 
 // tcp msg header & end
 const char* const G_MSGHEADER = "<HX>";

@@ -1,7 +1,7 @@
 #include "HttpServer.h"
 
-#include "../common/net/NetBaseDef.h"
-#include "../common/log4cxx/hx_log4cxx.h"
+#include "common/net/NetBaseDef.h"
+#include "common/log4cxx/hx_log4cxx.h"
 
 NG_LOGGER(logger, "CHttpServer");
 

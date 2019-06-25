@@ -1,6 +1,6 @@
 #include "SessionManager.h"
-#include "../common/utils/utility_fun.h"
-#include "../common/CommonEnum.h"
+#include "common/utils/utility_fun.h"
+#include "common/CommonEnum.h"
 //#include "DBBussUser.h"
 //#include "DBBussSystemSet.h"
 

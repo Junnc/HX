@@ -10,8 +10,8 @@
 #include <thread>
 
 #include "../WebSocketHandle/WSHandle.h"
-#include "../common/queue/ThreadPool.hpp"
-#include "../common/mempool/MemoryPool.h"
+#include "common/queue/ThreadPool.hpp"
+#include "common/mempool/MemoryPool.h"
 
 #define UPGRADE_HEADER			"Upgrade"
 #define WEB_SOCKET_HEADER_VALUE		"WebSocket"

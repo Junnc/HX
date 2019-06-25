@@ -3,9 +3,9 @@
 #include <sstream>
 #include <jsoncpp/json/json.h>
 
-#include "../common/log4cxx/hx_log4cxx.h"
-#include "../common/mempool/MemoryPool.h"
-#include "../common/mutex/cmutex.h"
+#include "common/log4cxx/hx_log4cxx.h"
+#include "common/mempool/MemoryPool.h"
+#include "common/mutex/cmutex.h"
 
 NG_LOGGER(logger, "CHttpServerEngine");
 

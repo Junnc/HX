@@ -8,7 +8,7 @@
 #include <hpsocket/common/GlobalDef.h> 
 
 #include "../HttpHandle/HttpHandle.h"
-#include "../common/queue/ThreadPool.hpp"
+#include "common/queue/ThreadPool.hpp"
 
 class CHttpServerEngine: public CHttpServerListener {
 private:

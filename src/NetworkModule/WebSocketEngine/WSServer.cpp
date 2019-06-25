@@ -1,5 +1,5 @@
 #include "WSServer.h"
-#include "../common/log4cxx/hx_log4cxx.h"
+#include "common/log4cxx/hx_log4cxx.h"
 
 NG_LOGGER(logger, "CWSServer");
 

@@ -3,8 +3,8 @@
 #include <string>
 
 #include "Session.h"
-#include "../common/mutex/rwmutex.h"
-#include "../common/instance_shared_from_this.h"
+#include "common/mutex/rwmutex.h"
+#include "common/instance_shared_from_this.h"
 
 typedef struct SessionInfo_
 {

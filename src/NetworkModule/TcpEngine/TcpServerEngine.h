@@ -9,7 +9,7 @@
 #include <jsoncpp/json/json.h>
 
 #include "../TcpHandle/TcpHandle.h"
-#include "../common/queue/ThreadPool.hpp"
+#include "common/queue/ThreadPool.hpp"
 
 struct HX_MSG {
 	std::string msg;

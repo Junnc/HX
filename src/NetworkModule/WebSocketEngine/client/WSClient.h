@@ -4,7 +4,7 @@
 #include <jsoncpp/json/json.h>
 
 #include "WSClientEngine.h"
-#include "../../common/net/NetBaseDef.h"
+#include "common/net/NetBaseDef.h"
 
 #define UPGRADE_HEADER                  "Upgrade"
 #define WEB_SOCKET_HEADER_VALUE         "WebSocket"
