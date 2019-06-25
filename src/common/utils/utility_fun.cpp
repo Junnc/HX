@@ -1,7 +1,6 @@
 ﻿#include <sstream>
 #include <limits>
 #include <cmath>
-#include <uuid/uuid.h>
 #include <unistd.h>
 #include <time.h>
 #include <string.h>
@@ -576,12 +575,7 @@ namespace UtilityFun {
 
 	std::string createGUID()
 	{
-		char uuid [64];
-		uuid_t uu;
-		uuid_generate_random(uu);
-		uuid_unparse_lower(uu, uuid);
-
-		return std::string(uuid);
+		return UUID::getUUid();
 	}
 
 	extern int getCurrentYear()
