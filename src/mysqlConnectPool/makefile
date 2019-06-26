@@ -1,6 +1,10 @@
 CC := g++ -std=c++11
 CFLAGS = -Wall -O2 -std=c++11
 INCLUDE := -I ./include
+
+HXBASE = $(shell cd ../..; pwd)
+HXSRC = $(HXBASE)/src
+HXLIB = $(HXBASE)/lib
 #LDFLAGS := -L /usr/lib64/mysql
 #LDLIBS := -l mysqlclient
 TARGET := libdbpool.so
@@ -11,11 +15,11 @@ all: $(TARGET)
 
 $(TARGET):$(OBJS)
 	$(CC) -shared -o $(TARGET) $(OBJS)
-	cp $(TARGET) ../../lib
+	cp $(TARGET) $(HXLIB)
 
-$(OBJS): $(SRCS)
-	$(CC) -fpic -c $^ $(CXXFLAGS) $(INCLUDE)
+%.o : %.cpp
+	$(CC) -fpic -c $< $(CXXFLAGS) $(INCLUDE)
 
 clean: 
 	rm -f $(TARGET) $(OBJS)
-	rm -f ../../lib/$(TARGET)
+	rm -f $(HXLIB)/$(TARGET)

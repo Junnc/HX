@@ -37,8 +37,8 @@ $(TARGET):$(OBJS)
 	$(CC) -shared -o $(TARGET) $(OBJS)
 	cp $(TARGET) $(HXLIB)
 
-$(OBJS): $(SRCS)
-	$(CC) -fpic -c $^ $(INCLUDE_PATH)
+%.o : %.cpp
+	$(CC) -fpic -c $< $(INCLUDE_PATH)
 
 clean: 
 	rm -f $(TARGET) $(OBJS)
