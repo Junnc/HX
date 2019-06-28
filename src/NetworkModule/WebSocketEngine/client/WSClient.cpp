@@ -78,13 +78,11 @@ bool CWSClient::Start(){
 	}
 
 	// request quotation 
-	/*
-	 *if (!requestQuotation()) {
-	 *        // log error msg
-	 *        std::cout<< "request quotation error" << std::endl;
-	 *        return false;
-	 *}
-	 */
+	if (!requestQuotation()) {
+		// log error msg
+		std::cout<< "request quotation error" << std::endl;
+		return false;
+	}
 
 	return true;
 }

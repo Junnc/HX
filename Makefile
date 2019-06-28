@@ -1,12 +1,19 @@
 CXX = g++
 CFLAGS = -Wall -O2 -std=c++11
-SRCS =
+SRCS = 
 OBJS =
-TARGET = newFuture
+
+HXLIBPATH = -L ./lib -L /usr/lib64/mysql/
+LIBS = $(wildcard lib/*.so)
+HXLIBS = $(patsubst lib/lib%.so, -l%, $(LIBS))
+DEPLIBS = -lhpsocket -ljsoncpp -lpthread -llog4cxx -lmysqlclient
+
+TARGET = hx_serv
 Modules = ./src/common \
 	  ./src/mysqlConnectPool \
 	  ./src/NetworkModule \
-	  ./src/UserManager 
+	  ./src/UserManager \
+	  ./src/NewFuture
 
 sub_make = $(MAKE) -C $(1) || exit "$$?";
 sub_clean= $(MAKE) clean -C $(1);
@@ -20,12 +27,13 @@ mm:
 mc:
 	@ $(foreach n,  $(Modules), $(call sub_clean, $(n)))
 
-$(TARGET): mm
-	# $(CXX) $(OBJS) -o $(TARGET)
+$(TARGET): src/hx.cpp mm
+	 $(CXX) $< -o $(TARGET) $(HXLIBPATH) $(HXLIBS) $(DEPLIBS) 
 	
 test:
 	# modules test
 	#
 	
 clean: mc
+	rm -f $(TARGET)
 	@ echo -e "\nclean $(TARGET), *.o and *.so SUCCESS."
