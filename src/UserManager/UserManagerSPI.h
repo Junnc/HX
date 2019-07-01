@@ -4,6 +4,7 @@
 #include "jsoncpp/json/json.h"
 #include <memory>
 #include "UserTableMsgStruct.h"
+#include <iostream>
 
 
 class CUserManagerSPI
