@@ -84,7 +84,7 @@ enum BussinessType
 
 typedef struct userInfos_
 {
-	string  m_sUserID;
+	std::string  m_sUserID;
 
 	//用户类型 1=交易员 2=风控员 3=管理员 4=机构 5=资金账户
 	int		m_nUserType;
@@ -92,17 +92,17 @@ typedef struct userInfos_
 	//所属机构层次 1=super 2=一级代理 3=二级代理...
 	int		m_nLevel;		
 
-	string  m_sLoginName;
+	std::string  m_sLoginName;
 	
-	string  m_sAccountName;
+	std::string  m_sAccountName;
 	
-	string  m_sPassword;
+	std::string  m_sPassword;
 	
-	string  m_sPhone;
+	std::string  m_sPhone;
 	
-	string  m_sPoularizeLink;
+	std::string  m_sPoularizeLink;
 	
-	string  m_sAddress;
+	std::string  m_sAddress;
 	
 	//是否逻辑删除 0=正常 1=删除
 	int		m_nIsLogicDel;		
@@ -150,37 +150,37 @@ typedef std::shared_ptr<userInfos>  userInfosPtr;
 typedef struct userRelationShip_
 {
 	//用户ID
-	string sUserID;
+	std::string sUserID;
 
 	//机构
-	string sInstitutionID;	
+	std::string sInstitutionID;
 
 	//机构名称
 	std::string sInstitutionName;
 
 	//风控员
-	string sMonitorID;	
+	std::string sMonitorID;
 
 	//管理员
-	string sManagerID;	
+	std::string sManagerID;
 
 	//主账户/实盘账户
-	string sMainID;		
+	std::string sMainID;
 
 	//保证金模板
-	string sMarginModuleID;	
+	std::string sMarginModuleID;
 
 	//手续费模板
-	string sFeemoduleID;	
+	std::string sFeemoduleID;
 
 	//风控模板
-	string sRiskModuleID;	
+	std::string sRiskModuleID;
 
 	//权限模板
-	string sAuthrityModuleID;	
+	std::string sAuthrityModuleID;
 
 	//机构风控模板权限
-	string sRiskModuleAuthrityID;  
+	std::string sRiskModuleAuthrityID;
 }userRelationShip;
 
 typedef std::shared_ptr<userRelationShip> userRelationShipPtr;
@@ -190,17 +190,17 @@ typedef std::map<userInfosPtr, userRelationShipPtr>		UserAndRelationShipMap;
 
 typedef struct userIdentify_
 {
-	string m_sUserID;
+	std::string m_sUserID;
 	
-	string m_sIDCard;
+	std::string m_sIDCard;
 	
-	string m_sBankName;
+	std::string m_sBankName;
 	
-	string m_sBranchBank;
+	std::string m_sBranchBank;
 
-	string m_sBankCardNo;
+	std::string m_sBankCardNo;
 	//真实姓名
-	string m_sSurName;		
+	std::string m_sSurName;
 
 	//是否实名认证 0=未认证  1=认证
 	int	   m_nIsDentify;	

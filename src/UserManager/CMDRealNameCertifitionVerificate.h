@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <map>
 #include <string>
 #include "TableFeild_define.h"
@@ -6,14 +6,36 @@
 #include "CacheUserAllInfo.h"
 #include "jsoncpp/json/json.h"
 #include "UserManagerAPI.h"
+#include "PrintLogMessage.h"
 
 class CRealNameCertifitionVerificate
 {
 public:
 
 	CRealNameCertifitionVerificate(Json::Value root, std::string sessionUserID, PUserManagerSPI pUserManagerSPI):
-		m_info(root),m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI) {}
+		m_info(root),m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI),m_errMsg("") {}
 
+	~CRealNameCertifitionVerificate()
+	{
+		Json::FastWriter wts;
+		std::string msg = wts.write(m_info);
+		int nLogType = 0;
+		msg.replace(msg.find("\n"), 1, "");
+		if (m_errMsg.empty())
+		{
+			msg.append("==> Success");
+			nLogType = LogType::LOG_INFO;
+		}
+		else
+		{
+			msg.append("==> Fail:");
+			nLogType = LogType::LOG_ERR;
+		}
+		
+		msg.append(m_errMsg);
+		std::cout << msg << std::endl;
+		CPrintLogMessage plm(msg, nLogType, "[CMDRealNameCertificationVerificate]");
+	}
 	void handle()
 	{
 		try
@@ -24,47 +46,49 @@ public:
 			std::string apprReson	= m_info[ApprovalReason].asString();
 			std::string apprID		= m_info[ApprovalID].asString();
 
-			//ĞŞ¸ÄÉóºË×´Ì¬ Êı¾İ¿âºÍ»º´æ
-			if (!CDBOpeartor::instance()->updateCertifitionRegState(id, state, apprReson, apprID))
+			//ä¿®æ”¹å®¡æ ¸çŠ¶æ€ æ•°æ®åº“å’Œç¼“å­˜
+			if (!CDBOpeartor::instance()->updateCertifitionRegState(id, state, apprReson, apprID) || 
+				!CCacheUserAllInfo::instance()->updateCertifitionRegState(id, state, apprReson, apprID))
 			{
-				//²åÈëÊı¾İ¿â ´íÎó´¦Àí
+				m_errMsg = "æ•°æ®åº“æ“ä½œå¤±è´¥";
 			}
-			CCacheUserAllInfo::instance()->updateCertifitionRegState(id, state, apprReson, apprID);
 
-			//ĞŞ¸ÄÓÃ»§±íÑéÖ¤×´Ì¬
+			//ä¿®æ”¹ç”¨æˆ·è¡¨éªŒè¯çŠ¶æ€
 			if (1 == state)
 			{
-				//ÉóºËÍ¨¹ı£¬¸ÄÎªÒÑÈÏÖ¤
-				if (!CDBOpeartor::instance()->updateIndentifyState(userID, state))
+				//å®¡æ ¸é€šè¿‡ï¼Œæ”¹ä¸ºå·²è®¤è¯
+				if (!CDBOpeartor::instance()->updateIndentifyState(userID, state) ||
+					!CCacheUserAllInfo::instance()->updateIndentifyState(userID, state))
 				{
-					//´íÎó´¦Àí
+					m_errMsg = "æ•°æ®åº“æ“ä½œå¤±è´¥";
 				}
-				//¸üĞÂ»º´æ
-				CCacheUserAllInfo::instance()->updateIndentifyState(userID, state);
+				//æ›´æ–°ç¼“å­˜
+				
 
-				//Í¨ÖªÊ×Ò³¸üĞÂÊµÃûÈÏÖ¤ĞÅÏ¢
+				//é€šçŸ¥é¦–é¡µæ›´æ–°å®åè®¤è¯ä¿¡æ¯
 				certificationRegRecordInfoPtr tableInfo = std::make_shared<certificationRegisterRecordInfo>();
 				CDBOpeartor::instance()->SelectDB(id, tableInfo);
-				m_pUserManagerSPI->OnRealNameCertificationSent(0, "ÕıÈ·", tableInfo, m_sessionUserID);
+				m_pUserManagerSPI->OnRealNameCertificationSent(0, "æ­£ç¡®", tableInfo, m_sessionUserID);
 
 			}
 			if (2 == state)
 			{
-				//ÉóºËÎ´Í¨¹ı£¬¸ÄÎªÎ´ÈÏÖ¤
-				if (!CDBOpeartor::instance()->updateIndentifyState(userID, 0))
+				//å®¡æ ¸æœªé€šè¿‡ï¼Œæ”¹ä¸ºæœªè®¤è¯
+				if (!CDBOpeartor::instance()->updateIndentifyState(userID, 0) ||
+					!CCacheUserAllInfo::instance()->updateIndentifyState(userID, 0))
 				{
-					//´íÎó´¦Àí
+					m_errMsg = "æ•°æ®åº“æ“ä½œå¤±è´¥";
 				}
-				CCacheUserAllInfo::instance()->updateIndentifyState(userID, 0);
-
+				
 			}
 
-			//ÕıÈ·Íê³É£¬ÏìÓ¦²Ù×÷ÊÂ¼ş
-			m_pUserManagerSPI->OnRealNameCertificationExe(0, "ÕıÈ·", id, state, apprReson, apprID, m_sessionUserID);
+			//æ­£ç¡®å®Œæˆï¼Œå“åº”æ“ä½œäº‹ä»¶
+			m_pUserManagerSPI->OnRealNameCertificationExe(0, "æ­£ç¡®", id, state, apprReson, apprID, m_sessionUserID);
 		}
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
+			m_errMsg = e.what();
 		}
 
 	}
@@ -73,4 +97,5 @@ private:
 	Json::Value m_info;
 	std::string m_sessionUserID;
 	PUserManagerSPI m_pUserManagerSPI;
+	std::string m_errMsg;
 };

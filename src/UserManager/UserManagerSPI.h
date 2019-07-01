@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <string>
 #include <map>
 #include "jsoncpp/json/json.h"
@@ -9,96 +9,114 @@
 class CUserManagerSPI
 {
 public:
-	// ¸ù¾İsessionIDÕÒµ½userID
+	//===================================  ç½‘ç»œæ¨¡å—  ===============================================//
+	// æ ¹æ®sessionIDæ‰¾åˆ°userID
 	virtual std::string OnGetUseIDBySessionID(const std::string& sessionID) { return ""; }
-	// ¸ù¾İsessionIDÕÒµ½ip
+	// æ ¹æ®sessionIDæ‰¾åˆ°ip
 	virtual std::string OnGetIpBySessionID(const std::string& sessionID) { return ""; }
-	// ¸ù¾İsessionIDÕÒµ½mac
+	// æ ¹æ®sessionIDæ‰¾åˆ°mac
 	virtual std::string OnGetMacBySessionID(const std::string& sessionID) { return ""; }
 
-	// Ôö¼Ó×ÓÕË»§ 
+	// å¢åŠ å­è´¦æˆ· 
 	virtual void OnAddChildAccount(int errorCode, const std::string& errMsg, userInfos uInfo, userRelationShip tableInfo, const std::string& sessionID) {}
 
-	// ×ÓÕË»§ÍÆËÍ
+	// å­è´¦æˆ·æ¨é€
 	virtual void OnAddChildAccPush(int errorCode, const std::string& errmsg, userInfos uInfo, userRelationShip tableInfo, const std::string& sessionID) {}
 
-	// ²éÑ¯×ÓÕË»§
+	// æŸ¥è¯¢å­è´¦æˆ·
 	virtual void OnQryChildAccount(int errorCode, UserAndRelationShipMap& tableInfos, const std::string& sessionID) {}
 
-	// É¾³ı×ÓÕË»§
+	// åˆ é™¤å­è´¦æˆ·
 	virtual void OnDelChildAccount(int errorCode, const std::string& errmsg, const std::string& userID, const std::string& institutionID, const std::string& sessionID) {}
 
-	// ĞŞ¸Ä×ÓÕË»§ 
+	// ä¿®æ”¹å­è´¦æˆ· 
 	virtual void OnUpdateChildAccount(int errorCode, const std::string& errmsg, const std::string& oldRiskModuleID, userInfos uInfo, userRelationShip tableInfo, const std::string& sessionID) {}
 
-	// ²éÑ¯Ö÷ÕË»§
+	// æŸ¥è¯¢ä¸»è´¦æˆ·
 	virtual void OnQryMainAccount(int errorCode, UserAndRelationShipMap& tableInfos, const std::string& sessionID) {}
 
-	// Ôö¼ÓÖ÷ÕË»§
+	// å¢åŠ ä¸»è´¦æˆ·
 	virtual void OnAddMainAccount(int errorCode, const std::string& errMsg, userInfos uInfo, userRelationShip tableInfo, const std::string& sessionID) {}
 
-	// Ö÷ÕË»§ÍÆËÍ
+	// ä¸»è´¦æˆ·æ¨é€
 	virtual void OnAddMainAccPush(int errorCode, const std::string& errMsg, userInfos uInfo, userRelationShip tableInfo, const std::string& sessionID) {}
 
-	// ĞŞ¸ÄÖ÷ÕË»§ 
+	// ä¿®æ”¹ä¸»è´¦æˆ· 
 	virtual void OnUpdateMainAccount(int errorCode, userInfos uInfo, userRelationShip tableInfo, const std::string& sessionID) {}
 
-	// É¾³ıÖ÷ÕË»§ 
+	// åˆ é™¤ä¸»è´¦æˆ· 
 	virtual void OnDelMainAccount(int errorCode, const std::string& errMsg, const std::string& userID, const std::string& institutionID, const std::string& sessionID) {}
 
-	// ²éÑ¯¹ÜÀíÔ±
+	// æŸ¥è¯¢ç®¡ç†å‘˜
 	virtual void OnQryManagerAccount(int errorCode, UserAndRelationShipMap& tableInfos, const std::string& sessionID) {}
 
-	// Ôö¼Ó¹ÜÀíÔ±
+	// å¢åŠ ç®¡ç†å‘˜
 	virtual void OnAddManagerAccount(int errorCode, const std::string& errmsg, userInfos uInfo, userRelationShip tableInfo, const std::string& sessionID) {}
 
-	// ĞŞ¸Ä¹ÜÀíÔ±
+	// ä¿®æ”¹ç®¡ç†å‘˜
 	virtual void OnUpdateManagerAccount(int errorCode, userInfos uInfo, userRelationShip tableInfo, const std::string& sessionID) {}
 
-	// É¾³ı¹ÜÀíÔ±
+	// åˆ é™¤ç®¡ç†å‘˜
 	virtual void OnDelManagerAccount(int errorCode, const std::string& errmsg, const std::string& userID, const std::string& institutionID, const std::string& sessionID) {}
 
-	// ²éÑ¯ÏÂ¼¶´úÀí
+	// æŸ¥è¯¢ä¸‹çº§ä»£ç†
 	virtual void OnQryChildAgent(int errorCode, UserAndRelationShipMap& tableInfos, const std::string& sessionID) {}
 
-	// Ôö¼ÓÏÂ¼¶´úÀí
+	// å¢åŠ ä¸‹çº§ä»£ç†
 	virtual void OnAddChildAgent(int errorCode, const std::string& userID, userInfos uInfo, userRelationShip tableInfo, const std::string& sessionID) {}
 
-	// ĞŞ¸ÄÏÂ¼¶´úÀí
+	// ä¿®æ”¹ä¸‹çº§ä»£ç†
 	virtual void OnUpdateChildAgent(int errorCode, userInfos uInfo, userRelationShip tableInfo, const std::string& sessionID) {}
 
-	// É¾³ıÏÂ¼¶´úÀí
+	// åˆ é™¤ä¸‹çº§ä»£ç†
 	virtual void OnDelChildAgent(int errorCode, const std::string& errMsg, const std::string& userID, const std::string& institutionID, const std::string& sessionID) {}
 
-	// °ó¶¨ÒøĞĞ¿¨
+	// ç»‘å®šé“¶è¡Œå¡
 	virtual void OnBankCardBind(int errorCode, const std::string& errMsg, userIdentifyPtr& userIdentifyInfo, const std::string& sessionID) {}
 
-	// ÊµÃûÈÏÖ¤ÏìÓ¦
+	// å®åè®¤è¯å“åº”
 	virtual void OnRealNameCertification(int errorCode, const std::string& errMsg, certificationRegRecordInfoPtr tableInfo, int isIdentify, const std::string& sessionID) {}
 
-	// ÊµÃûÈÏÖ¤ÉóºËÍ¨¹ıÍÆËÍÏûÏ¢
+	// å®åè®¤è¯å®¡æ ¸é€šè¿‡æ¨é€æ¶ˆæ¯
 	virtual void OnRealNameCertificationSent(int errorCode, const std::string& errMsg, certificationRegRecordInfoPtr& tableInfo, const std::string& sessionID) {}
 
-	// ÊµÃûÈÏÖ¤Ö´ĞĞ
+	// å®åè®¤è¯æ‰§è¡Œ
 	virtual void OnRealNameCertificationExe(int errorCode, const std::string& errMsg, int id, int state, const std::string& apprReson, const std::string& apprName, const std::string& sessionID) {}
 
-	// ²éÑ¯ËùÓĞ´úÀí
+	// æŸ¥è¯¢æ‰€æœ‰ä»£ç†
 	virtual void OnQryAllChildAgent(int errorCode, const std::string& errMsg, UserAndRelationShipMap& institutionID, const std::string& sessionID) {}
 
-	// ²éÑ¯´úÀíÉÌ×ÓÕË»§
+	// æŸ¥è¯¢ä»£ç†å•†å­è´¦æˆ·
 	virtual void OnQryAllChildAccount(int errorCode, UserAndRelationShipMap& tableInfos, const std::string& sessionID) {}
 
-	// ²éÑ¯´úÀíÉÌÖ÷ÕË»§
+	// æŸ¥è¯¢ä»£ç†å•†ä¸»è´¦æˆ·
 	virtual void OnQryAllMainAccount(int errorCode, UserAndRelationShipMap& tableInfos, const std::string& sessionID) {}
 
-	// ²éÑ¯´úÀíÉÌ¹ÜÀíÔ±
+	// æŸ¥è¯¢ä»£ç†å•†ç®¡ç†å‘˜
 	virtual void OnQryAllManagerAccount(int errorCode, UserAndRelationShipMap& tableInfos, const std::string& sessionID) {}
 
-	// ²éÑ¯ÏÂ¼¶´úÀí
+	// æŸ¥è¯¢ä¸‹çº§ä»£ç†
 	virtual void OnQryNextAllChildAgent(int errorCode, UserAndRelationShipMap& tableInfos, const std::string& sessionID) {}
 
-	//·´À¡ÓÃ»§È¨ÏŞ
+	//åé¦ˆç”¨æˆ·æƒé™
 	virtual void OnConnectAhturityLegitimacyInfo(std::string& content, std::string& sessionUserID) { std::cout << content.c_str() << std::endl; }
+
+	//åˆ¤æ–­ç”¨æˆ·æ˜¯å¦åœ¨çº¿
+	virtual bool IsUserOnline(std::string& userId) { return false; }
+
+	//é€šè¿‡sessionIDå¾—åˆ°userID
+	virtual std::string GetUserIDBySessionID(const std::string& sessionID) { return "hengbang1"; }
+
+public:
+	//=======================================äº¤æ˜“æ¨¡å—============================================================//
+	//æ·»åŠ ä¸€æ¡ä½£é‡‘ä¿¡æ¯
+	virtual bool AddCommissionInfo(std::string userID) { return true; }
+
+	//æŸ¥è¯¢è´¦æˆ·æ˜¯å¦æœ‰æŒä»“
+	virtual bool IsHoldPosition(std::string userID) { return false; }
+
+	//æŸ¥è¯¢è´¦æˆ·æ˜¯å¦æœ‰æœªç”Ÿæ•ˆè®¢å•
+	virtual bool IsTodayNoEffectiveOrder(std::string userID) { return false; }
 
 private:
 

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <map>
 #include <string>
 #include "TableFeild_define.h"
@@ -11,13 +11,36 @@
 #include "errCodeDef.h"
 #include "AuthrityControl.h"
 #include "GlobalParamLogRecord.h"
+#include "PrintLogMessage.h"
 
 
 class CChildAccountDelete
 {
 public:
 	CChildAccountDelete(Json::Value root, std::string sessionUserID, PUserManagerSPI pUserManagerSPI) :
-		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI) {}
+		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI),m_errMsg("") {}
+
+	~CChildAccountDelete()
+	{
+		Json::FastWriter wts;
+		std::string msg = wts.write(m_info);
+		int nLogType = 0;
+		msg.replace(msg.find("\n"), 1, "");
+		if (m_errMsg.empty())
+		{
+			msg.append("==> Success");
+			nLogType = LogType::LOG_INFO;
+		}
+		else
+		{
+			msg.append("==> Fail:");
+			nLogType = LogType::LOG_ERR;
+
+		}
+		msg.append(m_errMsg);
+		std::cout << msg << std::endl;
+		CPrintLogMessage plm(msg, nLogType, "[CMDChildAccountDelete]");
+	}
 
 	void handle()
 	{
@@ -25,8 +48,8 @@ public:
 		{
 			std::string sUsrID = m_info[usrID].asString();
 			int resource = m_info[RESOURCE].asInt();
-			//ÅÐ¶Ï´ýÉ¾³ý×ÓÕË»§ÊÇ·ñÔÚÏß
-			if (CAuthrityControl::instance()->IsUserOnline(sUsrID))
+			//åˆ¤æ–­å¾…åˆ é™¤å­è´¦æˆ·æ˜¯å¦åœ¨çº¿
+			if (m_pUserManagerSPI->IsUserOnline(sUsrID))
 			{
 				Json::Value contentValue;
 				contentValue[usrID] = sUsrID;
@@ -34,60 +57,69 @@ public:
 				Json::Value rootValue;
 				rootValue[CMD] = CHILD_ACCOUNT_DELETE_RSP;
 				rootValue[ERRCODE] = ERR_ACC_ONLINE;
-				rootValue[ERRMSG] = "ÕË»§ÔÚÏß";
+				rootValue[ERRMSG] = "è´¦æˆ·åœ¨çº¿";
 				rootValue[CONTENT] = contentValue;
 				Json::FastWriter writer;
-				std::string content = writer.write(rootValue);
-
-				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(content, m_sessionUserID);
+				m_errMsg = writer.write(rootValue);
+				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(m_errMsg, m_sessionUserID);
 				return;
 			}
 
-			//¼ì²âÍ¨ÐÅÊÇ·ñºÏ·¨
-			if (!CAuthrityControl::instance()->IsChildAccIDConnectNormal(sUsrID, m_sessionUserID))
+			//æ£€æµ‹é€šä¿¡æ˜¯å¦åˆæ³•
+			if (!CAuthrityControl::instance()->IsChildAccIDConnectNormal(sUsrID, m_sessionUserID, m_pUserManagerSPI))
 			{
 				Json::Value rootValue;
 				rootValue[ERRCODE] = CHILD_ACCOUNT_QUERY_RSP;
-				rootValue[ERRMSG] = "²»ºÏ·¨µÄÖ¸Áî";
+				rootValue[ERRMSG] = "ä¸åˆæ³•çš„æŒ‡ä»¤";
 				rootValue[CONTENT] = "";
 
 				Json::FastWriter writer;
-				std::string content = writer.write(rootValue);
-
-				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(content, m_sessionUserID);
+				m_errMsg = writer.write(rootValue);
+				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(m_errMsg, m_sessionUserID);
 				return;
 			}
 
-			//ÅÐ¶Ï×ÓÕË»§ÊÇ·ñ³Ö²Ö»òÕßÎ´ÉúÐ§¶©µ¥£¬  ÎÞ·¨É¾³ý
-			if (0/*ÅÐ¶Ï¶©µ¥*/)
+			//åˆ¤æ–­å­è´¦æˆ·æ˜¯å¦æŒä»“æˆ–è€…æœªç”Ÿæ•ˆè®¢å•ï¼Œ  æ— æ³•åˆ é™¤
+			if (m_pUserManagerSPI->IsHoldPosition(sUsrID))
 			{
-				//·´À¡  ¶©µ¥´æÔÚ »òÕßÎ´ÉúÐ§¶©µ¥ ÐÅÏ¢
+				m_errMsg = "å­è´¦æˆ·å­˜åœ¨æŒä»“";
+				return m_pUserManagerSPI->OnDelChildAccount(ERR_CHILDPOSITION_EXIST, "å­è´¦æˆ·å­˜åœ¨æŒä»“",sUsrID,"",m_sessionUserID);		
+			}
+
+			if (m_pUserManagerSPI->IsTodayNoEffectiveOrder(sUsrID))
+			{
+				m_errMsg = "å­è´¦æˆ·å­˜åœ¨æœªç”Ÿæ•ˆçš„å§”æ‰˜";
+				return m_pUserManagerSPI->OnDelChildAccount(ERR_CHILDORDER_EXIST, "å­è´¦æˆ·å­˜åœ¨æœªç”Ÿæ•ˆçš„å§”æ‰˜", sUsrID, "", m_sessionUserID);
 			}
 
 			userInfos usrInfo;
 			userRelationShip usrShip;
 			if (!CCacheUserAllInfo::instance()->selectUsersOne(sUsrID, usrInfo) ||
 				!CCacheUserAllInfo::instance()->selectUsersOne(sUsrID, usrShip))
-				return m_pUserManagerSPI->OnDelChildAccount(ERR_USER_NOEXIST, "ÕË»§ÒÑ±»É¾³ý", sUsrID, "", m_sessionUserID);
-		
+			{
+				m_errMsg = "è´¦æˆ·å·²è¢«åˆ é™¤";
+				return m_pUserManagerSPI->OnDelChildAccount(ERR_USER_NOEXIST, "è´¦æˆ·å·²è¢«åˆ é™¤", sUsrID, "", m_sessionUserID);
+			}
+				
+			GlobalParamsLogRecord::instance()->AccountManagerLogRecord("å­è´¦æˆ·åˆ é™¤", 
+				GlobalParamsLogRecord::instance()->GetLogInfo(m_pUserManagerSPI, m_sessionUserID, OperatorObjType::OOT_CHILD_ACC),
+				nullptr, nullptr,UsersType::USER_TRADER, sUsrID);
 
-			GlobalParamsLogRecord::instance()->AccountManagerLogRecord("×ÓÕË»§É¾³ý", GlobalParamsLogRecord::instance()->GetLogInfo(m_pUserManagerSPI, m_sessionUserID, OperatorObjType::OOT_CHILD_ACC), nullptr, nullptr,UsersType::USER_TRADER, sUsrID);
-
-			//¿ªÊ¼É¾³ýDB
+			//å¼€å§‹åˆ é™¤DB
 			if (!CDBOpeartor::instance()->deleteChildAccount(sUsrID))
-				return m_pUserManagerSPI->OnDelChildAccount(ERR_DB_OPERATOR, "ÕË»§ÒÑ±»É¾³ý", sUsrID, "", m_sessionUserID);
+				return m_pUserManagerSPI->OnDelChildAccount(ERR_DB_OPERATOR, "è´¦æˆ·å·²è¢«åˆ é™¤", sUsrID, "", m_sessionUserID);
 			
 			CCacheUserAllInfo::instance()->deleteUserAllinfo(sUsrID);
-			m_pUserManagerSPI->OnDelChildAccount(0, "ÕýÈ·", sUsrID, usrShip.sInstitutionID, m_sessionUserID);
-
+			m_pUserManagerSPI->OnDelChildAccount(0, "æ­£ç¡®", sUsrID, usrShip.sInstitutionID, m_sessionUserID);
 
 			usrInfo.m_nIsLogicDel = 1;
-			m_pUserManagerSPI->OnAddChildAccPush(0, "ÕýÈ·", usrInfo, usrShip, m_sessionUserID);
+			m_pUserManagerSPI->OnAddChildAccPush(0, "æ­£ç¡®", usrInfo, usrShip, m_sessionUserID);
 
 		}
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
+			m_errMsg = e.what();
 		}
 		
 	}
@@ -96,4 +128,5 @@ private:
 	Json::Value m_info;
 	std::string m_sessionUserID;
 	PUserManagerSPI m_pUserManagerSPI;
+	std::string m_errMsg;
 };

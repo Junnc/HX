@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <map>
 #include <string>
 #include "TableFeild_define.h"
@@ -11,12 +11,36 @@
 #include "errCodeDef.h"
 #include "AuthrityControl.h"
 #include "GlobalParamLogRecord.h"
+#include "PrintLogMessage.h"
 
 class CAgentDelete
 {
 public:
 	CAgentDelete(Json::Value root, std::string sessionUserID, PUserManagerSPI pUserManagerSPI) :
-		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI) {}
+		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI),m_errMsg("") {}
+
+	~CAgentDelete()
+	{
+		Json::FastWriter wts;
+		std::string msg = wts.write(m_info);
+		msg.replace(msg.find("\n"), 1, "");
+		int nLogType = 0;
+		if (m_errMsg.empty())
+		{
+			msg.append("==> Success");
+			nLogType = LogType::LOG_INFO;
+		}
+		else
+		{
+			msg.append("==> Fail:");
+			nLogType = LogType::LOG_ERR;
+
+		}
+		
+		msg.append(m_errMsg);
+		std::cout << msg << std::endl;
+		CPrintLogMessage plm(msg, nLogType, "[CMDAgentDelete]");
+	}
 
 	void handle()
 	{
@@ -25,8 +49,8 @@ public:
 			std::string sUsrID  = m_info[usrID].asString();
 			int recourse		= m_info[RESOURCE].asInt();
 
-			//ÅÐ¶ÏÊÇ·ñÔÚÏß
-			if (CAuthrityControl::instance()->IsUserOnline(sUsrID))
+			//åˆ¤æ–­æ˜¯å¦åœ¨çº¿
+			if (m_pUserManagerSPI->IsUserOnline(sUsrID))
 			{
 				Json::Value contentValue;
 				contentValue[usrID] = sUsrID;
@@ -34,26 +58,26 @@ public:
 				Json::Value rootValue;
 				rootValue[CMD] = LOWER_AGENT_DELETE_RSP;
 				rootValue[ERRCODE] = ERR_ACC_ONLINE;
-				rootValue[ERRMSG] = "ÕË»§ÔÚÏß";
+				rootValue[ERRMSG] = "è´¦æˆ·åœ¨çº¿";
 				rootValue[CONTENT] = contentValue;
 
 				Json::FastWriter writer;
-				std::string content = writer.write(rootValue);
-
-				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(content, m_sessionUserID);
+				m_errMsg = writer.write(rootValue);
+				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(m_errMsg, m_sessionUserID);
 
 				return;
 			}
-			//¼ì²âÍ¨ÐÅÊÇ·ñºÏ·¨
-			if (!CAuthrityControl::instance()->IsAgentIDConnectNormal(sUsrID,m_sessionUserID))
+			//æ£€æµ‹é€šä¿¡æ˜¯å¦åˆæ³•
+			if (!CAuthrityControl::instance()->IsAgentIDConnectNormal(sUsrID,m_sessionUserID,m_pUserManagerSPI))
 			{
 				Json::Value rootValue;
 				rootValue[ERRCODE] = -1;
-				rootValue[ERRMSG] = "²»ºÏ·¨µÄÖ¸Áî";
+				rootValue[ERRMSG] = "ä¸åˆæ³•çš„æŒ‡ä»¤";
 				rootValue[CONTENT] = "";
 
 				Json::FastWriter writer;
 				std::string content = writer.write(rootValue);
+				m_errMsg = content;
 				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(content,m_sessionUserID);
 				return;
 			}
@@ -63,6 +87,7 @@ public:
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
+			m_errMsg = e.what();
 		}
 	}
 
@@ -71,48 +96,47 @@ private:
 	{
 		userRelationShip usrShip;
 
-		// ´úÀíÉÌÏÂ´æÔÚ×ÓÕËºÅ£¬ÎÞ·¨É¾³ý
+		// ä»£ç†å•†ä¸‹å­˜åœ¨å­è´¦å·ï¼Œæ— æ³•åˆ é™¤
 		UserAndRelationShipMap usermap;
 		if (CCacheUserAllInfo::instance()->queryAccount(sUsrID, usermap, UsersType::USER_TRADER))
 		{
-			//·´À¡ ÓÐ×ÓÕË»§´æÔÚ
-			return m_pUserManagerSPI->OnDelChildAgent(ERR_CHILDAACC_EXIST, "´æÔÚ×ÓÕË»§", sUsrID, "", m_sessionUserID);
+			m_errMsg = "å­˜åœ¨å­è´¦æˆ·";
+			return m_pUserManagerSPI->OnDelChildAgent(ERR_CHILDAACC_EXIST, "å­˜åœ¨å­è´¦æˆ·", sUsrID, "", m_sessionUserID);
 		}  
 
-		// ´úÀíÉÌ´æÔÚÏÂ¼¶´úÀí£¬ÎÞ·¨É¾³ý
+		// ä»£ç†å•†å­˜åœ¨ä¸‹çº§ä»£ç†ï¼Œæ— æ³•åˆ é™¤
 		if (CCacheUserAllInfo::instance()->queryAccount(sUsrID, usermap, UsersType::USER_INSTITUTION))
 		{
-			//·´À¡ ÓÐÏÂÒ»¼¶´úÀíÉÌ´æÔÚ
-			return m_pUserManagerSPI->OnDelChildAgent(ERR_CHILDAGENT_EXIST, "´æÔÚÏÂ¼¶´úÀí", sUsrID, "", m_sessionUserID);
+			m_errMsg = "å­˜åœ¨ä¸‹çº§ä»£ç†";
+			return m_pUserManagerSPI->OnDelChildAgent(ERR_CHILDAGENT_EXIST, "å­˜åœ¨ä¸‹çº§ä»£ç†", sUsrID, "", m_sessionUserID);
 		}
 
 		if (!CCacheUserAllInfo::instance()->selectUsersOne(sUsrID, usrShip))
 		{
-			std::cout << "ÕË»§ÒÑ±»É¾³ý" << endl;
-			//·´À¡ÕË»§ÒÑ±»É¾³ý
-			return m_pUserManagerSPI->OnDelChildAgent(ERR_USER_NOEXIST, "ÕË»§ÒÑ±»É¾³ý", sUsrID, "", m_sessionUserID);
+			m_errMsg = "è´¦æˆ·å·²è¢«åˆ é™¤";
+			return m_pUserManagerSPI->OnDelChildAgent(ERR_USER_NOEXIST, "è´¦æˆ·å·²è¢«åˆ é™¤", sUsrID, "", m_sessionUserID);
 		}
 
-		//¼ÇÂ¼Êý¾Ý¿âÈÕÖ¾  É¾³ýÐÅÏ¢
-		GlobalParamsLogRecord::instance()->AccountManagerLogRecord("ÏÂ¼¶´úÀíÉ¾³ý", 
+		//è®°å½•æ•°æ®åº“æ—¥å¿—  åˆ é™¤ä¿¡æ¯
+		GlobalParamsLogRecord::instance()->AccountManagerLogRecord("ä¸‹çº§ä»£ç†åˆ é™¤", 
 			GlobalParamsLogRecord::instance()->GetLogInfo(m_pUserManagerSPI, m_sessionUserID, OperatorObjType::OOT_CHILD_AGENT), nullptr, nullptr, UsersType::USER_INSTITUTION, sUsrID);
 
-		//É¾³ýÊý¾Ý¿â
+		//åˆ é™¤æ•°æ®åº“
 		int nRes = 0;
 		if (!CDBOpeartor::instance()->deleteChildAgent(sUsrID) ||
 			!CCacheUserAllInfo::instance()->deleteChildAgent(sUsrID))
 		{
-			std::cout << "É¾³ýÊý¾Ý¿â´úÀíÉÌÊ§°Ü" << endl;
+			m_errMsg = "åˆ é™¤æ•°æ®åº“ä»£ç†å•†å¤±è´¥";
 			nRes = -1;
 		}
 
-		//·´À¡²Ù×÷³É¹¦  ´ýÊµÏÖ
-		std::cout << "É¾³ý´úÀíÉÌÕËºÅ³É¹¦" << endl;
-		m_pUserManagerSPI->OnDelChildAgent(nRes, "ÕýÈ·", sUsrID, usrShip.sInstitutionID, m_sessionUserID);
+		//åé¦ˆæ“ä½œæˆåŠŸ
+		m_pUserManagerSPI->OnDelChildAgent(nRes, "æ­£ç¡®", sUsrID, usrShip.sInstitutionID, m_sessionUserID);
 	}
 private:
 	Json::Value m_info;
 	std::string m_sessionUserID;
 	PUserManagerSPI m_pUserManagerSPI;
+	std::string m_errMsg;
 };
 

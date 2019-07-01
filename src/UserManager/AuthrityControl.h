@@ -1,10 +1,11 @@
 #pragma once
 //#include "instance.h"
 #include "instance_shared_from_this.h"
+#include "UserManagerSPI.h"
 #include <map>
 
 
-class CAuthrityControl : public CommonTools::instance_shared_from_this/*instance_unshared*/<CAuthrityControl>
+class CAuthrityControl : public CommonTools::instance_shared_from_this<CAuthrityControl>
 {
 public:
 	int Init();
@@ -15,11 +16,11 @@ public:
 	// 账户名称是否是连接本身
 	bool IsLoginNameConnectNormal(const std::string& loginNames, const std::string& sessionID);
 	// 代理账户是否是所属代理连接
-	bool IsAgentIDConnectNormal(const std::string& institutionID, const std::string& sessionID);
+	bool IsAgentIDConnectNormal(const std::string& institutionID, const std::string& sessionID, PUserManagerSPI pSPI);
 	// 代理账户是否是所属代理连接
 	bool IsAgentNameConnectNormal(const std::string& loginNames, const std::string& sessionID);
 	// 非代理账户是否是所属代理连接
-	bool IsChildAccIDConnectNormal(const std::string& childAccID, const std::string& sessionID);
+	bool IsChildAccIDConnectNormal(const std::string& childAccID, const std::string& sessionID, PUserManagerSPI pSPI);
 	// 代理手续费模板所属代理连接
 	bool IsAgentFeeIDConnectNormal(const std::string& feeMudoleID, const std::string& sessionID);
 	// 权限模板所属代理连接
@@ -36,7 +37,7 @@ public:
 	// 账户权限是否存在
 	bool IsAuthrityExist(const std::string& userID, int cmdCode);
 
-	bool IsUserOnline(std::string& userId);
+	/*bool IsUserOnline(std::string& userId);*/
 
 private:
 	std::map<int, int> m_cmdCodeTofunIDMap;

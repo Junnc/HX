@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <map>
 #include <string>
 #include "TableFeild_define.h"
@@ -8,12 +8,35 @@
 #include <iostream>
 #include "jsoncpp/json/json.h"
 #include "UserManagerAPI.h"
+#include "PrintLogMessage.h"
 
 class CRealNameCertifition
 {
 public:
 	CRealNameCertifition(Json::Value root, std::string sessionUserID, PUserManagerSPI pUserManagerSPI) :
-		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI) {}
+		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI),m_errMsg("") {}
+
+	~CRealNameCertifition()
+	{
+		Json::FastWriter wts;
+		std::string msg = wts.write(m_info);
+		int nLogType = 0;
+		msg.replace(msg.find("\n"), 1, "");
+		if (m_errMsg.empty())
+		{
+			msg.append("==> Success");
+			nLogType = LogType::LOG_INFO;
+		}
+		else
+		{
+			msg.append("==> Fail:");
+			nLogType = LogType::LOG_ERR;
+		}
+		
+		msg.append(m_errMsg);
+		std::cout << msg << std::endl;
+		CPrintLogMessage plm(msg, nLogType, "[CMDRealNameCertification]");
+	}
 
 	void handle()
 	{
@@ -34,33 +57,37 @@ public:
 			usrIdentify.m_sSurName = cer.m_sSurName;
 
 			certificationRegRecordInfoPtr cerPtr = std::make_shared<certificationRegisterRecordInfo>(cer);
-			//ÅÐ¶ÏÊÇ·ñÒÑÑéÖ¤
+			//åˆ¤æ–­æ˜¯å¦å·²éªŒè¯
 			userIdentify usInfo;
 			if (!CCacheUserAllInfo::instance()->selectIdentifyInfo(cer.m_sUserId, usInfo))
 			{
-				return m_pUserManagerSPI->OnRealNameCertification(-1, "Ã»ÓÐÈÏÖ¤ÐÅÏ¢", cerPtr, 0, m_sessionUserID);
+				m_errMsg = "æ²¡æœ‰è®¤è¯ä¿¡æ¯";
+				return m_pUserManagerSPI->OnRealNameCertification(-1, "æ²¡æœ‰è®¤è¯ä¿¡æ¯", cerPtr, 0, m_sessionUserID);
 			}
 
 			if (0 != usInfo.m_nIsDentify)
 			{
-				return m_pUserManagerSPI->OnRealNameCertification(-1, "´ýÈÏÖ¤»òÕßÒÑÈÏÖ¤", cerPtr, 0, m_sessionUserID);
+				m_errMsg = "å¾…è®¤è¯æˆ–è€…å·²è®¤è¯";
+				return m_pUserManagerSPI->OnRealNameCertification(-1, "å¾…è®¤è¯æˆ–è€…å·²è®¤è¯", cerPtr, 0, m_sessionUserID);
 			}
 
-			//Ìí¼ÓÈÏÖ¤¼ÇÂ¼
+			//æ·»åŠ è®¤è¯è®°å½•
 			if (!CDBOpeartor::instance()->addUserIdentifyAuthenticate(cer) ||
 				!CCacheUserAllInfo::instance()->updateIdentifySurName(usrIdentify) ||
 				!CCacheUserAllInfo::instance()->addCertifitionRegRecordTableCache(cer))
 			{
-				//Ìí¼ÓÈÏÖ¤¼ÇÂ¼Ê§°Ü  ·´À¡
-				return m_pUserManagerSPI->OnRealNameCertification(-1, "ÐÞ¸ÄÈÏÖ¤±ê¼ÇÎª´ýÈÏÖ¤Ê§°Ü", cerPtr, 0, m_sessionUserID);
+				//æ·»åŠ è®¤è¯è®°å½•å¤±è´¥  åé¦ˆ
+				m_errMsg = "ä¿®æ”¹è®¤è¯æ ‡è®°ä¸ºå¾…è®¤è¯å¤±è´¥";
+				return m_pUserManagerSPI->OnRealNameCertification(-1, "ä¿®æ”¹è®¤è¯æ ‡è®°ä¸ºå¾…è®¤è¯å¤±è´¥", cerPtr, 0, m_sessionUserID);
 			}
 
-			//·´À¡ÐÞ¸Ä³É¹¦  ´ýÊµÏÖ
-			m_pUserManagerSPI->OnRealNameCertification(0, "ÕýÈ·", cerPtr, 2, m_sessionUserID);
+			//åé¦ˆä¿®æ”¹æˆåŠŸ  å¾…å®žçŽ°
+			m_pUserManagerSPI->OnRealNameCertification(0, "æ­£ç¡®", cerPtr, 2, m_sessionUserID);
 		}
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
+			m_errMsg = e.what();
 		}
 	}
 
@@ -68,4 +95,5 @@ private:
 	Json::Value m_info;
 	std::string m_sessionUserID;
 	PUserManagerSPI m_pUserManagerSPI;
+	std::string m_errMsg;
 };

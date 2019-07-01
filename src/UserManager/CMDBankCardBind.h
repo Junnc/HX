@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <map>
 #include <string>
 #include "TableFeild_define.h"
@@ -8,13 +8,35 @@
 #include <iostream>
 #include "jsoncpp/json/json.h"
 #include "UserManagerAPI.h"
+#include "PrintLogMessage.h"
 
 class CBankCardBind
 {
 public:
 	CBankCardBind(Json::Value root, std::string sessionUserID, PUserManagerSPI pUserManagerSPI) :
-		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI) {}
+		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI), m_errMsg("") {}
 
+	~CBankCardBind()
+	{
+		Json::FastWriter wts;
+		std::string msg = wts.write(m_info);
+		int nLogType = 0;
+		msg.replace(msg.find("\n"), 1, "");
+		if (m_errMsg.empty())
+		{
+			msg.append("==> Success");
+			nLogType = LogType::LOG_INFO;
+		}
+		else
+		{
+			msg.append("==> Fail:");
+			nLogType = LogType::LOG_ERR;
+
+		}
+		msg.append(m_errMsg);
+		std::cout << msg << std::endl;
+		CPrintLogMessage plm(msg, nLogType, "[CMDBankCardBind]");
+	}
 	void handle()
 	{
 		try
@@ -29,17 +51,17 @@ public:
 			if (!CDBOpeartor::instance()->addUserIdentify(usrIdentify) ||
 				!CCacheUserAllInfo::instance()->addUserIdentifyCache(usrIdentify))
 			{
-				std::cout << "add DB UserIdentify fail!" << endl;
-				//·´À¡Êý¾Ý  °ó¶¨ÒøÐÐ¿¨Ê§°Ü
-				return m_pUserManagerSPI->OnBankCardBind(-1, "Êý¾Ý¿â²Ù×÷Ê§°Ü", ideptr, m_sessionUserID);
+				m_errMsg = "æ•°æ®åº“æ“ä½œå¤±è´¥";
+				return m_pUserManagerSPI->OnBankCardBind(-1, "æ•°æ®åº“æ“ä½œå¤±è´¥", ideptr, m_sessionUserID);
 			}
 
-			//·´À¡Êý¾Ý °ó¶¨ÒøÐÐ¿¨³É¹¦
-			m_pUserManagerSPI->OnBankCardBind(0, "ÕýÈ·", ideptr, m_sessionUserID);
+			//åé¦ˆæ•°æ® ç»‘å®šé“¶è¡Œå¡æˆåŠŸ
+			m_pUserManagerSPI->OnBankCardBind(0, "æ­£ç¡®", ideptr, m_sessionUserID);
 		}
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
+			m_errMsg = e.what();
 		}
 				
 	}
@@ -48,4 +70,5 @@ private:
 	Json::Value m_info;
 	std::string m_sessionUserID;
 	PUserManagerSPI m_pUserManagerSPI;
+	std::string m_errMsg;
 };

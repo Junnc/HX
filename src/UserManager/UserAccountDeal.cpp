@@ -1,4 +1,4 @@
-#include "UserAccountDeal.h"
+ï»¿#include "UserAccountDeal.h"
 #include "CacheUserAllInfo.h"
 #include <iostream>
 #include "NetCommandCode.h"
@@ -29,19 +29,18 @@
 #include "CMDQryAllMainAccountInAgent.h"
 #include "CMDQryAllManagerInAgent.h"
 #include "CMDQryAllNextChildAgentInAgent.h"
-//#include "TaskManager.h"
 
 
 
 void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUserID)
 {
 	std::cout << "enter CommandParse" << endl;
-	//½âÎö
+	//è§£æž
 	int nCmd = root[CMD].asInt();
 
 	switch (nCmd)
 	{
-	case CHILD_ACCOUNT_ADD_REQ:					//×ÓÕË»§Ìí¼ÓÇëÇó
+	case CHILD_ACCOUNT_ADD_REQ:					//å­è´¦æˆ·æ·»åŠ è¯·æ±‚
 	{
 		m_cmdsPool.AddTask([=] {
 			CChildAccountAdd cldacc(root, sessionUserID, m_pUserManagerSPI);
@@ -51,7 +50,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		break;
 	}
 		
-	case CHILD_ACCOUNT_DELETE_REQ:				// ×ÓÕË»§É¾³ýÇëÇó 
+	case CHILD_ACCOUNT_DELETE_REQ:				// å­è´¦æˆ·åˆ é™¤è¯·æ±‚ 
 	{
 		m_cmdsPool.AddTask([=] {
 			CChildAccountDelete childDel(root, sessionUserID,m_pUserManagerSPI);
@@ -59,7 +58,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		});
 		break;
 	}
-	case CHILD_ACCOUNT_UPDATE_REQ :				// ×ÓÕË»§¸üÐÂÇëÇó
+	case CHILD_ACCOUNT_UPDATE_REQ :				// å­è´¦æˆ·æ›´æ–°è¯·æ±‚
 	{
 		m_cmdsPool.AddTask([=] {
 			CChildAccountUpdate childUp(root, sessionUserID,m_pUserManagerSPI);
@@ -68,7 +67,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		break;
 	}
 		
-	case CHILD_ACCOUNT_QUERY_REQ:				// ×ÓÕË»§²éÑ¯ÇëÇó 
+	case CHILD_ACCOUNT_QUERY_REQ:				// å­è´¦æˆ·æŸ¥è¯¢è¯·æ±‚ 
 	{
 		m_cmdsPool.AddTask([=] {
 			CQryChildAccount qryChild(root, sessionUserID, m_pUserManagerSPI);
@@ -78,7 +77,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		break;
 	}
 
-	case MAIN_ACCOUNT_QUERY_REQ:				// Ö÷ÕË»§²éÑ¯ÇëÇó 
+	case MAIN_ACCOUNT_QUERY_REQ:				// ä¸»è´¦æˆ·æŸ¥è¯¢è¯·æ±‚ 
 	{
 		m_cmdsPool.AddTask([=] {
 			CMainAccountQry mainAccQry(root, sessionUserID,m_pUserManagerSPI);
@@ -87,7 +86,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		break;
 	}
 
-	case MAIN_ACCOUNT_ADD_REQ :					// Ö÷ÕË»§Ôö¼ÓÇëÇó 
+	case MAIN_ACCOUNT_ADD_REQ :					// ä¸»è´¦æˆ·å¢žåŠ è¯·æ±‚ 
 	{
 		m_cmdsPool.AddTask([=] {
 			CMainAccountAdd mainAccAdd(root, sessionUserID, m_pUserManagerSPI);
@@ -97,9 +96,8 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		break;
 	}
 
-	case MAIN_ACCOUNT_UPDATE_REQ :					// Ö÷ÕË»§¸üÐÂÇëÇó 
+	case MAIN_ACCOUNT_UPDATE_REQ :					// ä¸»è´¦æˆ·æ›´æ–°è¯·æ±‚ 
 	{
-		std::cout << " 102 " << std::endl;
 		m_cmdsPool.AddTask([=] {
 			CMainAccountUpdate mainAccUps(root, sessionUserID, m_pUserManagerSPI);
 			mainAccUps.handle();
@@ -107,7 +105,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		
 		break;
 	}
-	case MAIN_ACCOUNT_DELETE_REQ :					// Ö÷ÕË»§É¾³ýÇëÇó 
+	case MAIN_ACCOUNT_DELETE_REQ :					// ä¸»è´¦æˆ·åˆ é™¤è¯·æ±‚ 
 	{
 		m_cmdsPool.AddTask([=] {
 			CMainAccountDelete mainAccDel(root, sessionUserID, m_pUserManagerSPI);
@@ -115,7 +113,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		});
 		break;
 	}
-	case MANAGER_QUERY_REQ :					    // ¹ÜÀíÔ±²éÑ¯ÇëÇó 
+	case MANAGER_QUERY_REQ :					    // ç®¡ç†å‘˜æŸ¥è¯¢è¯·æ±‚ 
 	{
 		m_cmdsPool.AddTask([=] {
 			CManagerQuery managerQry(root, sessionUserID, m_pUserManagerSPI);
@@ -123,7 +121,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		});	
 		break;
 	}
-	case MANAGER_ADD_REQ :						    // ¹ÜÀíÔ±Ôö¼ÓÇëÇó 
+	case MANAGER_ADD_REQ :						    // ç®¡ç†å‘˜å¢žåŠ è¯·æ±‚ 
 	{
 		m_cmdsPool.AddTask([=] {
 			CManagerAdd managerAdd(root, sessionUserID, m_pUserManagerSPI);
@@ -131,7 +129,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		});
 		break;
 	}
-	case MANAGER_UPDATE_REQ :					    // ¹ÜÀíÔ±¸üÐÂÇëÇó 
+	case MANAGER_UPDATE_REQ :					    // ç®¡ç†å‘˜æ›´æ–°è¯·æ±‚ 
 	{
 		m_cmdsPool.AddTask([=] {
 			CManagerUpdate managerUpdate(root, sessionUserID, m_pUserManagerSPI);
@@ -139,7 +137,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		});	
 		break;
 	}
-	case MANAGER_DELETE_REQ :                      // ¹ÜÀíÔ±É¾³ýÇëÇó 
+	case MANAGER_DELETE_REQ :                      // ç®¡ç†å‘˜åˆ é™¤è¯·æ±‚ 
 	{
 		m_cmdsPool.AddTask([=] {
 			CManagerDelete managerDel(root, sessionUserID, m_pUserManagerSPI);
@@ -148,7 +146,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		break;
 	}
 		
-	case LOWER_AGENT_QUERY_REQ:						// ´úÀíÉÌ²éÑ¯ÇëÇó 
+	case LOWER_AGENT_QUERY_REQ:						// ä»£ç†å•†æŸ¥è¯¢è¯·æ±‚ 
 	{
 		m_cmdsPool.AddTask([=] {
 			CAgentQuery agentQry(root, sessionUserID,m_pUserManagerSPI);
@@ -156,7 +154,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		});	
 		break;
 	}
-	case LOWER_AGENT_ADD_REQ :						// ´úÀíÉÌÔö¼ÓÇëÇó 
+	case LOWER_AGENT_ADD_REQ :						// ä»£ç†å•†å¢žåŠ è¯·æ±‚ 
 	{
 		m_cmdsPool.AddTask([=] {
 			CAgentAdd agentAdd(root, sessionUserID, m_pUserManagerSPI);
@@ -164,7 +162,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		});	
 		break;
 	}
-	case LOWER_AGENT_UPDATE_REQ :					// ´úÀíÉÌ¸üÐÂÇëÇó 
+	case LOWER_AGENT_UPDATE_REQ :					// ä»£ç†å•†æ›´æ–°è¯·æ±‚ 
 	{
 		m_cmdsPool.AddTask([=] {
 			CAgentUpdate agentUpdate(root, sessionUserID, m_pUserManagerSPI);
@@ -173,7 +171,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		
 		break;
 	}
-	case LOWER_AGENT_DELETE_REQ :					// ´úÀíÉÌÉ¾³ýÇëÇó
+	case LOWER_AGENT_DELETE_REQ :					// ä»£ç†å•†åˆ é™¤è¯·æ±‚
 	{
 		m_cmdsPool.AddTask([=] {
 			CAgentDelete agentDel(root, sessionUserID, m_pUserManagerSPI);
@@ -181,7 +179,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		});	
 		break;
 	}
-	// »ú¹¹(×ÜºóÌ¨)µÄ´úÀíÉÌ²éÑ¯ÇëÇó 
+	// æœºæž„(æ€»åŽå°)çš„ä»£ç†å•†æŸ¥è¯¢è¯·æ±‚ 
 	case ALLAGENTBYINSTID_QUERY_REQ:
 	{
 		m_cmdsPool.AddTask([=] {
@@ -192,7 +190,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		break;
 	}
 
-	// ´úÀíÉÌÏÂËùÓÐ×ÓÕË»§²éÑ¯ÇëÇó 
+	// ä»£ç†å•†ä¸‹æ‰€æœ‰å­è´¦æˆ·æŸ¥è¯¢è¯·æ±‚ 
 	case ALLCHILDBYAGTID_QUERY_REQ:
 	{
 		m_cmdsPool.AddTask([=] {
@@ -201,7 +199,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		});
 		break;
 	}
-	// ´úÀíÉÌËùÓÐÖ÷ÕË»§²éÑ¯ÇëÇó 
+	// ä»£ç†å•†æ‰€æœ‰ä¸»è´¦æˆ·æŸ¥è¯¢è¯·æ±‚ 
 	case ALLMAINACTBYAGTID_QUERY_REQ:
 	{
 		m_cmdsPool.AddTask([=] {
@@ -211,7 +209,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		break;
 	}
 
-	// ´úÀíÉÌËùÓÐ¹ÜÀíÔ±²éÑ¯ÇëÇó 
+	// ä»£ç†å•†æ‰€æœ‰ç®¡ç†å‘˜æŸ¥è¯¢è¯·æ±‚ 
 	case ALLMANAGERACTBYAGTID_QUERY_REQ:
 	{
 		m_cmdsPool.AddTask([=] {
@@ -221,12 +219,12 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 
 		break;
 	}
-	// ´úÀíÉÌËùÓÐ·ç¿ØÔ±²éÑ¯ÇëÇó
+	// ä»£ç†å•†æ‰€æœ‰é£ŽæŽ§å‘˜æŸ¥è¯¢è¯·æ±‚
 	case ALLRISKACTBYAGTID_QUERY_REQ:
 	{
 		break;
 	}
-	// ²éÑ¯´úÀíÉÌËùÓÐÏÂ¼¶´úÀíÉÌÇëÇó
+	// æŸ¥è¯¢ä»£ç†å•†æ‰€æœ‰ä¸‹çº§ä»£ç†å•†è¯·æ±‚
 	case ALLAGENTBYAGTID_QUERY_REQ:
 	{
 		m_cmdsPool.AddTask([=] {
@@ -235,7 +233,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		});
 		break;
 	}
-	case BANK_CARD_BIND_REQ:                  //ÒøÐÐ¿¨°ó¶¨ÇëÇó
+	case BANK_CARD_BIND_REQ:                  //é“¶è¡Œå¡ç»‘å®šè¯·æ±‚
 	{
 		m_cmdsPool.AddTask([=] {
 			CBankCardBind bankcard(root, sessionUserID, m_pUserManagerSPI);
@@ -244,7 +242,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		break;
 	}
 		
-	case REAL_NAME_IDENTIFY_REQ:				//ÊµÃûÈÏÖ¤ÇëÇó
+	case REAL_NAME_IDENTIFY_REQ:				//å®žåè®¤è¯è¯·æ±‚
 	{
 		m_cmdsPool.AddTask([=] {
 			CRealNameCertifition realname(root, sessionUserID, m_pUserManagerSPI);
@@ -254,7 +252,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		break;
 	}
 		
-	case CERTIFICATION_APPROVAL_HANDLE_REQ:  //ÊµÃûÈÏÖ¤ÉóºËÇëÇó
+	case CERTIFICATION_APPROVAL_HANDLE_REQ:  //å®žåè®¤è¯å®¡æ ¸è¯·æ±‚
 	{
 		m_cmdsPool.AddTask([=] {
 			CRealNameCertifitionVerificate realNameCer(root, sessionUserID, m_pUserManagerSPI);
@@ -263,7 +261,7 @@ void CCommandParseAndDeal::CommandParse(Json::Value& root, std::string sessionUs
 		break;
 	}
 
-	case CERTIFICATION_APPROVAL_QRY_REQ:    //ÊµÃûÈÏÖ¤²éÑ¯ÇëÇó
+	case CERTIFICATION_APPROVAL_QRY_REQ:    //å®žåè®¤è¯æŸ¥è¯¢è¯·æ±‚
 
 		break;
 	default:
@@ -287,7 +285,8 @@ bool CCommandParseAndDeal::init(int nThreadNum)
 	return true;
 }
 
-//nflag  1 == ÒøÐÐ¿¨°ó¶¨   2==ÊµÃûÈÏÖ¤ 
+//nflag  1 == é“¶è¡Œå¡ç»‘å®š   2==å®žåè®¤è¯ 
+/*
 void CCommandParseAndDeal::addUserIdentifyTranslate(std::map<string, string>& root, userIdentify& usrIdentify,int nflag)
 {
 	usrIdentify.m_sUserID = root[usrID];	
@@ -296,7 +295,7 @@ void CCommandParseAndDeal::addUserIdentifyTranslate(std::map<string, string>& ro
 		usrIdentify.m_sBankName = root[BankName];
 		usrIdentify.m_sBranchBank = root[BranchBank];
 		usrIdentify.m_sBankCardNo = root[BankCardNo];	
-		usrIdentify.m_nIsDentify = 0/*std::stoi(root[IsIdentify])*/;
+		usrIdentify.m_nIsDentify = 0/ *std::stoi(root[IsIdentify])* /;
 	}
 
 	if (2 == nflag)
@@ -337,7 +336,7 @@ void CCommandParseAndDeal::addUserIdentifyAuthenticate(std::string sessionUserID
 	certificationRegisterRecordInfo cerRegRec;
 	CertifitionRegRecTranslate(root, cerRegRec);
 
-	//1. Ìí¼Ó»º´æ
+	//1. æ·»åŠ ç¼“å­˜
 	if (!CCacheUserAllInfo::instance()->addCertifitionRegRecordTableCache(cerRegRec))
 		return;
 	userIdentify usrIdentify;
@@ -350,10 +349,10 @@ void CCommandParseAndDeal::addUserIdentifyAuthenticate(std::string sessionUserID
 		return;
 	}
 
-	//2.Ìí¼ÓÊý¾Ý¿â
+	//2.æ·»åŠ æ•°æ®åº“
 	if (!CDBOpeartor::instance()->addUserIdentifyAuthenticate(cerRegRec))
 	{
 		std::cout << "add DB UserIdentifyAuthenticate fail!" << endl;
 		return;
 	}
-}
+}*/

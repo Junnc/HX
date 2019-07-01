@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <map>
 #include <string>
 #include "TableFeild_define.h"
@@ -11,32 +11,56 @@
 #include "errCodeDef.h"
 #include "GlobalParamLogRecord.h"
 #include "AuthrityControl.h"
+#include "PrintLogMessage.h"
 
 class CMainAccountDelete
 {
 public:
 	CMainAccountDelete(Json::Value root, std::string sessionUserID, PUserManagerSPI pUserManagerSPI) :
-		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI) {}
+		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI),m_errMsg("") {}
+
+	~CMainAccountDelete()
+	{
+		Json::FastWriter wts;
+		std::string msg = wts.write(m_info);
+		int nLogType = 0;
+		msg.replace(msg.find("\n"), 1, "");
+		if (m_errMsg.empty())
+		{
+			msg.append("==> Success");
+			nLogType = LogType::LOG_INFO;
+		}
+		else
+		{
+			msg.append("==> Fail:");
+			nLogType = LogType::LOG_ERR;
+
+		}
+		
+		msg.append(m_errMsg);
+		std::cout << msg << std::endl;
+		CPrintLogMessage plm(msg, nLogType, "[CMDMainAccountDelete]");
+	}
 
 	void handle()
 	{
 		try
 		{
-			//d´ýÉ¾³ýµÄÖ÷ÕËºÅUid
+			//då¾…åˆ é™¤çš„ä¸»è´¦å·Uid
 			std::string sUsrID = m_info[usrID].asString();
 			std::string institution = m_info[InstitutionID].asString();
 
-			//¼ì²âÍ¨ÐÅÊÇ·ñºÏ·¨
-			if (!CAuthrityControl::instance()->IsChildAccIDConnectNormal(sUsrID,m_sessionUserID))
+			//æ£€æµ‹é€šä¿¡æ˜¯å¦åˆæ³•
+			if (!CAuthrityControl::instance()->IsChildAccIDConnectNormal(sUsrID,m_sessionUserID, m_pUserManagerSPI))
 			{
 				Json::Value rootValue;
 				rootValue[ERRCODE] = -1;
-				rootValue[ERRMSG] = "²»ºÏ·¨µÄÖ¸Áî";
+				rootValue[ERRMSG] = "ä¸åˆæ³•çš„æŒ‡ä»¤";
 				rootValue[CONTENT] = "";
 
 				Json::FastWriter writer;
-				std::string content = writer.write(rootValue);
-				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(content, m_sessionUserID);
+				m_errMsg = writer.write(rootValue);
+				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(m_errMsg, m_sessionUserID);
 				return;
 			}
 
@@ -44,38 +68,34 @@ public:
 			userInfos usrInfo;
 			CCacheUserAllInfo::instance()->queryAccount(institution, usrInfo);
 			bool iRes = false;
-			std::cout << "level=" << usrInfo.m_nLevel << ",type=" << usrInfo.m_nUserType
-				<< ",institution=" << institution << endl;
 			if (usrInfo.m_nLevel == 1 && usrInfo.m_nUserType == UsersType::USER_INSTITUTION ||
 				usrInfo.m_nUserType == UsersType::USER_MANAGER)
 			{
-				//ÊÇ·ñ´æÔÚ°ó¶¨×ÓÕË»§
+				//æ˜¯å¦å­˜åœ¨ç»‘å®šå­è´¦æˆ·
 				UserAndRelationShipMap usrMap;
 				if (CCacheUserAllInfo::instance()->selectMainBindChildAccount(sUsrID, usrMap))
 				{
-					//ÓÐ°ó¶¨µÄ×ÓÕËºÅ ÎÞ·¨É¾³ý ·´À¡
-					std::cout << "¸ÃÖ÷ÕËºÅ´æÔÚ°ó¶¨µÄ×ÓÕËºÅ" << endl;
-					return m_pUserManagerSPI->OnDelMainAccount(ERR_MAINIDTOCHILDACC_EXIST, "Ö÷ÕË»§´æÔÚ°ó¶¨µÄ×ÓÕË»§", sUsrID, "", m_sessionUserID);
+					m_errMsg = "ä¸»è´¦æˆ·å­˜åœ¨ç»‘å®šçš„å­è´¦æˆ·";
+					return m_pUserManagerSPI->OnDelMainAccount(ERR_MAINIDTOCHILDACC_EXIST, "ä¸»è´¦æˆ·å­˜åœ¨ç»‘å®šçš„å­è´¦æˆ·", sUsrID, "", m_sessionUserID);
 
 				}
 
-				//Ö÷ÕË»§ÊÇ·ñ´æÔÚ°ó¶¨µÄ¿ª»§Ä£°å
-				if (0/*¿ª»§Ä£°åÅÐ¶Ï*/)
+				//ä¸»è´¦æˆ·æ˜¯å¦å­˜åœ¨ç»‘å®šçš„å¼€æˆ·æ¨¡æ¿
+				if (0/*å¼€æˆ·æ¨¡æ¿åˆ¤æ–­*/)
 				{
-					//´æÔÚ¿ª»§Ä£°å  ÎÞ·¨É¾³ý  ·´À¡
-					return m_pUserManagerSPI->OnDelMainAccount(ERR_MAINIDTOCHILDACC_EXIST, "Ö÷ÕË»§ÒÑ°ó¶¨´úÀí¿ª»§Ä£°å£¬ÎÞ·¨É¾³ý", institution, sUsrID, m_sessionUserID);
+					m_errMsg = "ä¸»è´¦æˆ·å·²ç»‘å®šä»£ç†å¼€æˆ·æ¨¡æ¿ï¼Œæ— æ³•åˆ é™¤";
+					return m_pUserManagerSPI->OnDelMainAccount(ERR_MAINIDTOCHILDACC_EXIST, "ä¸»è´¦æˆ·å·²ç»‘å®šä»£ç†å¼€æˆ·æ¨¡æ¿ï¼Œæ— æ³•åˆ é™¤", institution, sUsrID, m_sessionUserID);
 				}
 
-				//Ö÷ÕË»§É¾³ýÈÕÖ¾¼ÇÂ¼µ½Êý¾Ý¿â  ´ýÊµÏÖ
-				GlobalParamsLogRecord::instance()->AccountManagerLogRecord("Ö÷ÕË»§É¾³ý", 
+				//ä¸»è´¦æˆ·åˆ é™¤æ—¥å¿—è®°å½•åˆ°æ•°æ®åº“
+				GlobalParamsLogRecord::instance()->AccountManagerLogRecord("ä¸»è´¦æˆ·åˆ é™¤", 
 					GlobalParamsLogRecord::instance()->GetLogInfo(m_pUserManagerSPI, m_sessionUserID, OperatorObjType::OOT_MAIN_ACC), nullptr, nullptr, UsersType::USER_MONEYACC, sUsrID);
 
-				//É¾³ýÖ÷ÕË»§
+				//åˆ é™¤ä¸»è´¦æˆ·
 				if (!CDBOpeartor::instance()->deleteMainAccountOrManager(sUsrID) ||
 					!CCacheUserAllInfo::instance()->deleteMainAccAllinfoOrManager(sUsrID))
 				{
-					//É¾³ýÊý¾Ý¿âÊ§°Ü ·´À¡
-					std::cout << "É¾³ýÊý¾Ý¿âÖ÷ÕË»§Ê§°Ü" << endl;
+					m_errMsg = "åˆ é™¤æ•°æ®åº“ä¸»è´¦æˆ·å¤±è´¥";
 					nRes = -1;
 				}
 			}
@@ -84,9 +104,8 @@ public:
 				UserAndRelationShipMap usrMap;
 				if (CCacheUserAllInfo::instance()->selectMainBindChildAccount(institution, sUsrID, usrMap))
 				{
-					//ÓÐ°ó¶¨µÄ×ÓÕËºÅ ÎÞ·¨É¾³ý ·´À¡
-					std::cout << "¸ÃÖ÷ÕËºÅ´æÔÚ°ó¶¨µÄ×ÓÕËºÅ" << endl;
-					return m_pUserManagerSPI->OnDelMainAccount(ERR_MAINIDTOCHILDACC_EXIST, "Ö÷ÕË»§´æÔÚ°ó¶¨µÄ×ÓÕË»§", sUsrID, "", m_sessionUserID);
+					m_errMsg = "ä¸»è´¦æˆ·å­˜åœ¨ç»‘å®šçš„å­è´¦æˆ·";
+					return m_pUserManagerSPI->OnDelMainAccount(ERR_MAINIDTOCHILDACC_EXIST, "ä¸»è´¦æˆ·å­˜åœ¨ç»‘å®šçš„å­è´¦æˆ·", sUsrID, "", m_sessionUserID);
 				}
 
 				if (!CDBOpeartor::instance()->delAssignMainAccount(sUsrID, institution) ||
@@ -97,13 +116,18 @@ public:
 			}
 
 			if (0 != iRes)
-				return m_pUserManagerSPI->OnDelMainAccount(ERR_DB_OPERATOR, "²Ù×÷Êý¾Ý¿âÊ§°Ü", sUsrID, "", m_sessionUserID);
+			{
+				m_errMsg = "æ“ä½œæ•°æ®åº“å¤±è´¥";
+				return m_pUserManagerSPI->OnDelMainAccount(ERR_DB_OPERATOR, "æ“ä½œæ•°æ®åº“å¤±è´¥", sUsrID, "", m_sessionUserID);
+			}
+				
 
-			m_pUserManagerSPI->OnDelMainAccount(iRes, "ÕýÈ·", sUsrID, institution, m_sessionUserID);
+			m_pUserManagerSPI->OnDelMainAccount(iRes, "æ­£ç¡®", sUsrID, institution, m_sessionUserID);
 		}
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
+			m_errMsg = e.what();
 		}	
 		
 	}
@@ -112,4 +136,5 @@ private:
 	Json::Value m_info;
 	std::string m_sessionUserID;
 	PUserManagerSPI m_pUserManagerSPI;
+	std::string m_errMsg;
 };

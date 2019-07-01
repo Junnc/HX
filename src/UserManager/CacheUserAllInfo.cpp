@@ -2,6 +2,10 @@
 #include <iostream>
 #include "DBOperator.h"
 #include <stdlib.h>
+#include <sstream>
+#include "log4cxx/hx_log4cxx.h"
+
+NG_LOGGER(logger,"CacheUserAllInfo");
 
 bool CCacheUserAllInfo::init()
 {
@@ -45,7 +49,10 @@ bool CCacheUserAllInfo::initCertifitionRegRecordTableCache()
 	if (!CDBOpeartor::instance()->queryCertifitionRegRecordAll(m_certifitionCache))
 		return false;
 
-	std::cout << "init certifition_register_record table cache success,size:" << m_certifitionCache.size() << endl;
+	std::ostringstream ss;
+	ss << "init certifition_register_record table cache success,size:" << m_certifitionCache.size();
+	std::cout << ss.str() << std::endl;
+	NG_LOG4CXX_INFO(logger, ss.str());
 	return true;
 }
 
@@ -54,7 +61,10 @@ bool CCacheUserAllInfo::initSystemSetCache()
 	if (!CDBOpeartor::instance()->querySystemSetAll(m_SysSetCache))
 		return false;
 
-	std::cout << "init system_set table cache success,size:" << m_SysSetCache.size() << endl;
+	std::ostringstream ss;
+	ss << "init system_set table cache success,size:" << m_SysSetCache.size();
+	std::cout << ss.str() << std::endl;
+	NG_LOG4CXX_INFO(logger, ss.str());
 	return true;
 }
 bool CCacheUserAllInfo::initUserTableCache()
@@ -64,8 +74,10 @@ bool CCacheUserAllInfo::initUserTableCache()
 	if (!CDBOpeartor::instance()->queryAllUser(userInfoMap))
 		return false;
 	m_userInfoCache = std::forward<std::map<std::string, userInfosPtr>>(userInfoMap);
-	std::cout << "init users table cache success,size:" << m_userInfoCache.size() << endl;
-
+	std::ostringstream ss;
+	ss << "init users table cache success,size:" << m_userInfoCache.size();
+	std::cout << ss.str() << endl;
+	NG_LOG4CXX_INFO(logger, ss.str());
 	return true;
 }
 
@@ -76,8 +88,10 @@ bool CCacheUserAllInfo::initUserIdentifyTableCache()
 	if (!CDBOpeartor::instance()->queryUserIdentifyAll(userIdentifys))
 		return false;
 	m_userIdentifyCache = std::forward<std::map<std::string, userIdentifyPtr>>(userIdentifys);
-	std::cout << "init users_identify_info table cache success,size:" << m_userIdentifyCache.size() << endl;
-
+	std::ostringstream ss;
+	ss << "init users_identify_info table cache success,size:" << m_userIdentifyCache.size();
+	std::cout << ss.str() << endl;
+	NG_LOG4CXX_INFO(logger, ss.str());
 	return true;
 }
 
@@ -86,7 +100,10 @@ bool CCacheUserAllInfo::initUserRelationShipCache()
 	if (!CDBOpeartor::instance()->queryUserRelationShipAll(m_userRelationShipCache))
 		return false;
 
-	std::cout << "init user_relation_ship table cache success,size:" << m_userRelationShipCache.size() << endl;
+	std::ostringstream ss;
+	ss << "init user_relation_ship table cache success,size:" << m_userRelationShipCache.size();
+	std::cout << ss.str() << endl;
+	NG_LOG4CXX_INFO(logger, ss.str());
 	return true;
 }
 
@@ -95,7 +112,10 @@ bool CCacheUserAllInfo::initUserMoneyInfoCache()
 	if (!CDBOpeartor::instance()->queryUserMoneyInfoAll(m_userMoneyCache))
 		return false;
 
-	std::cout << "init user_money_info table cache success,size:" << m_userMoneyCache.size() << endl;
+	std::ostringstream ss;
+	ss << "init user_money_info table cache success,size:" << m_userMoneyCache.size();
+	std::cout << ss.str() << endl;
+	NG_LOG4CXX_INFO(logger, ss.str());
 	return true;
 }
 
@@ -104,7 +124,10 @@ bool CCacheUserAllInfo::initInstitutionMainidMapCache()
 	if (!CDBOpeartor::instance()->queryInstitutionMainMapAll(m_institutionMainidMapCache))
 		return false;
 
-	std::cout << "init institution_mainid_map table cache success,size:" << m_institutionMainidMapCache.size() << endl;
+	std::ostringstream ss;
+	ss << "init institution_mainid_map table cache success,size:" << m_institutionMainidMapCache.size();
+	std::cout << ss.str() << endl;
+	NG_LOG4CXX_INFO(logger, ss.str());
 	return true;
 }
 
@@ -113,7 +136,10 @@ bool CCacheUserAllInfo::initLogRecordCache()
 	if (!CDBOpeartor::instance()->queryLogRecordAll(m_logRecordCache))
 		return false;
 
-	std::cout << "init log_records table cache success,size:" << m_logRecordCache.size() << endl;
+	std::ostringstream ss;
+	ss << "init log_records table cache success,size:" << m_logRecordCache.size();
+	std::cout << ss.str() << endl;
+	NG_LOG4CXX_INFO(logger, ss.str());
 	return true;
 }
 
@@ -688,7 +714,6 @@ bool CCacheUserAllInfo::IsBelongAgent(const std::string& institutionID, const st
 {
 	if (institutionID.empty() || childAgentID.empty())
 		return false;
-
 	std::string tmpChildAgentID = childAgentID;
 
 	{
@@ -701,7 +726,6 @@ bool CCacheUserAllInfo::IsBelongAgent(const std::string& institutionID, const st
 			return true;
 	}
 	
-
 	for (;;)
 	{
 		// 此代理或者管理员是否存在
@@ -709,17 +733,14 @@ bool CCacheUserAllInfo::IsBelongAgent(const std::string& institutionID, const st
 		auto iterChild = m_userInfoCache.find(tmpChildAgentID);
 		if (iterChild == m_userInfoCache.end())
 			return false;
-		
 		// 次连接是上级代理或者代理本身
 		std::unique_lock<std::mutex> lcks(m_mtx_users_relationShip);
 		if (m_userRelationShipCache[tmpChildAgentID]->sInstitutionID == institutionID || childAgentID == institutionID)
 			return true;
-
 		// 判断是否是super代理
 		if (m_userInfoCache[tmpChildAgentID]->m_nLevel == LevelType::LType_Institution
 			&& m_userInfoCache[tmpChildAgentID]->m_nUserType == UsersType::USER_INSTITUTION)
 			return false;
-
 		// 赋值到上一级代理继续查找
 		tmpChildAgentID = m_userRelationShipCache[tmpChildAgentID]->sInstitutionID;
 	}

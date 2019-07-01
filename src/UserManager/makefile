@@ -16,7 +16,8 @@ OBJS :=  CacheUserAllInfo.o DBOperator.o \
 	UserManagerAPI.o \
 	DigitalVisa.o \
 	AuthrityControl.o \
-	GlobalParamLogRecord.o
+	GlobalParamLogRecord.o \
+	PrintLogMessage.o
  
 SRCS :=  CacheUserAllInfo.cpp DBOperator.cpp \
 	 TableCertificationRegRecord.cpp TableInstitutionMainidMap.cpp \
@@ -27,7 +28,8 @@ SRCS :=  CacheUserAllInfo.cpp DBOperator.cpp \
 	UserManagerAPI.cpp \
 	DigitalVisa.cpp \
 	AuthrityControl.cpp \
-	GlobalParamLogRecord.cpp
+	GlobalParamLogRecord.cpp \
+	PrintLogMessage.cpp
 
 
 #all: $(TARGET) subdir

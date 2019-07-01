@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <map>
 #include <string>
 #include "TableFeild_define.h"
@@ -14,13 +14,35 @@
 #include "GlobalParamLogRecord.h"
 #include "AuthrityControl.h"
 #include "NetCommandCode.h"
+#include "PrintLogMessage.h"
 
 class CAgentAdd
 {
 public:
 	CAgentAdd(Json::Value root, std::string sessionUserID, PUserManagerSPI pUserManagerSPI) :
-		m_info(root), m_sessionUserID(sessionUserID),m_pUserManagerSPI(pUserManagerSPI) {}
+		m_info(root), m_sessionUserID(sessionUserID),m_pUserManagerSPI(pUserManagerSPI),m_errMsg("") {}
 
+	~CAgentAdd()
+	{
+		Json::FastWriter wts;
+		std::string msg = wts.write(m_info);
+		msg.replace(msg.find("\n"), 1, "");
+		int nLogType = 0;
+		if (m_errMsg.empty())
+		{
+			msg.append("==> Success");
+			nLogType = LogType::LOG_INFO;
+		}
+		else
+		{
+			msg.append("==> Fail:");
+			nLogType = LogType::LOG_ERR;
+
+		}
+		msg.append(m_errMsg);
+		std::cout << msg << std::endl;
+		CPrintLogMessage plm(msg, nLogType, "[CMDAgentAdd]");
+	}
 	void handle()
 	{
 		try
@@ -29,21 +51,21 @@ public:
 			userRelationShip userShip;
 			TranslateStruct(tmp, userShip);
 
-			//¼ì²âÍ¨ĞÅÊÇ·ñºÏ·¨
-			if (!CAuthrityControl::instance()->IsAgentIDConnectNormal(userShip.sInstitutionID, m_sessionUserID))
+			//æ£€æµ‹é€šä¿¡æ˜¯å¦åˆæ³•
+			if (!CAuthrityControl::instance()->IsAgentIDConnectNormal(userShip.sInstitutionID, m_sessionUserID,m_pUserManagerSPI))
 			{
 				Json::Value rootValue;
 				rootValue[ERRCODE] = CHILD_ACCOUNT_ADD_RSP;
-				rootValue[ERRMSG] = "²»ºÏ·¨µÄÖ¸Áî";
+				rootValue[ERRMSG] = "ä¸åˆæ³•çš„æŒ‡ä»¤";
 				rootValue[CONTENT] = "";
 
 				Json::FastWriter writer;
-				std::string content = writer.write(rootValue);
-				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(content, m_sessionUserID);
+				m_errMsg = writer.write(rootValue);
+				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(m_errMsg, m_sessionUserID);
 				return;
 			}
 
-			//Ìí¼Ó´úÀíÉÌ
+			//æ·»åŠ ä»£ç†å•†
 			std::string uuid = UUID::getUUid();
 			tmp.m_sUserID = uuid;  
 			userShip.sUserID = uuid;
@@ -53,6 +75,7 @@ public:
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
+			m_errMsg = e.what();
 		}
 	}
 
@@ -61,7 +84,7 @@ private:
 	void TranslateStruct(userInfos& tmp, userRelationShip& userShip)
 	{
 		tmp.m_nUserType			= UsersType::USER_INSTITUTION;
-		tmp.m_nLevel			= m_info[level].asInt();
+		tmp.m_nLevel			= m_info[levels].asInt();
 		tmp.m_sLoginName		= m_info[loginName].asString();
 		tmp.m_sAccountName		= m_info[accountName].asString();
 		tmp.m_sPassword			= m_info[passwords].asString();
@@ -81,23 +104,21 @@ private:
 
 	void addAgent(userInfos& users, userRelationShip& userShip)
 	{
-		//¼ì²âÕË»§Ãû²»ÄÜÓĞÖĞÎÄ
+		//æ£€æµ‹è´¦æˆ·åä¸èƒ½æœ‰ä¸­æ–‡
 		if (UtilityFun::isChineseString(users.m_sLoginName))
 		{
-			//·´À¡ÓÃ»§´íÎó  ÓĞÖĞÎÄ
-			std::cout << "µÇÂ¼ÃûÓĞÖĞÎÄ" << std::endl;
-			return m_pUserManagerSPI->OnAddChildAgent(ERR_ACCOUNT_CHINESE, "ÕË»§Ãû²»ÄÜ°üº¬ÖĞÎÄ", users, userShip, m_sessionUserID);
+			m_errMsg = "è´¦æˆ·åä¸èƒ½å«æœ‰ä¸­æ–‡";
+			return m_pUserManagerSPI->OnAddChildAgent(ERR_ACCOUNT_CHINESE, "è´¦æˆ·åä¸èƒ½åŒ…å«ä¸­æ–‡", users, userShip, m_sessionUserID);
 		}
 
-		//ÕË»§ÊÇ·ñÒÑ´æÔÚ
+		//è´¦æˆ·æ˜¯å¦å·²å­˜åœ¨
 		if (CCacheUserAllInfo::instance()->IsUserExist(users.m_sLoginName))
 		{
-			//·´À¡ÓÃ»§´íÎó  ÕË»§ÃûÒÑ´æÔÚ
-			std::cout << "¸ÃµÇÂ¼ÃûÒÑ´æÔÚ" << std::endl;
-			return m_pUserManagerSPI->OnAddChildAgent(ERR_ACCOUNT_ALREADY_EXIST, "ÕË»§ÃûÒÑ´æÔÚ", users, userShip, m_sessionUserID);
+			m_errMsg = "è´¦æˆ·åå·²å­˜åœ¨";
+			return m_pUserManagerSPI->OnAddChildAgent(ERR_ACCOUNT_ALREADY_EXIST, "è´¦æˆ·åå·²å­˜åœ¨", users, userShip, m_sessionUserID);
 		}
 
-		//ÅĞ¶Ï¸¸½ÚµãµÄµÈ¼¶
+		//åˆ¤æ–­çˆ¶èŠ‚ç‚¹çš„ç­‰çº§
 		int nLevel = 0;
 		CCacheUserAllInfo::instance()->selectAccLevel(userShip.sInstitutionID,nLevel);
 		SystemSet setinfo;
@@ -109,13 +130,14 @@ private:
 
 		if (nLevel > (nMaxLevel - 1))
 		{
-			//·´À¡ ´úÀíÉÌÔö¼ÓÒÑ´ï×î´óµÈ¼¶
-			return m_pUserManagerSPI->OnAddChildAgent(ERR_AGENTADD_MAXLEVEL, "´úÀíÉÌÔö¼ÓÒÑ´ï×î´óµÈ¼¶", users, userShip, m_sessionUserID);
+			//åé¦ˆ ä»£ç†å•†å¢åŠ å·²è¾¾æœ€å¤§ç­‰çº§
+			m_errMsg = "ä»£ç†å•†å¢åŠ å·²è¾¾æœ€å¤§ç­‰çº§";
+			return m_pUserManagerSPI->OnAddChildAgent(ERR_AGENTADD_MAXLEVEL, "ä»£ç†å•†å¢åŠ å·²è¾¾æœ€å¤§ç­‰çº§", users, userShip, m_sessionUserID);
 		}
-		//»ñÈ¡ÍÆ¹ãÂë
+		//è·å–æ¨å¹¿ç 
 		for (;;)
 		{
-			users.m_sPoularizeLink = CDigitalVisa::CreatPopularizeLink();//Ğ´º¯ÊıÉú³ÉÍÆ¹ãÂë
+			users.m_sPoularizeLink = CDigitalVisa::CreatPopularizeLink();//å†™å‡½æ•°ç”Ÿæˆæ¨å¹¿ç 
 			if (users.m_sPoularizeLink.size() < 4)
 				continue;
 			if(CCacheUserAllInfo::instance()->IsPopuLinkExist(users.m_sPoularizeLink))
@@ -123,38 +145,41 @@ private:
 			break;
 		}
 
-		// ¸¸½ÚµãµÈ¼¶+1,±íÊ¾ÏÂÒ»¼¶
+		// çˆ¶èŠ‚ç‚¹ç­‰çº§+1,è¡¨ç¤ºä¸‹ä¸€çº§
 		users.m_nLevel = nLevel + 1;
 		if (!CDBOpeartor::instance()->addAgent(users, userShip) ||
 			!CCacheUserAllInfo::instance()->addUserAndRelationShipCache(users, userShip))
 		{
-			//·´À¡Êı¾İ¿â²Ù×÷Ê§°Ü
-			return m_pUserManagerSPI->OnAddChildAgent(ERR_DB_OPERATOR, "²Ù×÷Êı¾İ¿âÊ§°Ü", users, userShip, m_sessionUserID);
+			m_errMsg = "æ“ä½œæ•°æ®åº“å¤±è´¥";
+			return m_pUserManagerSPI->OnAddChildAgent(ERR_DB_OPERATOR, "æ“ä½œæ•°æ®åº“å¤±è´¥", users, userShip, m_sessionUserID);
 		}
 
-		// ÓÃ»§ĞÅÏ¢ÎÊÌâ´æÈ¡
+		// ç”¨æˆ·ä¿¡æ¯é—®é¢˜å­˜å–
 		userIdentify identifyInfo;
 		identifyInfo.m_sUserID = users.m_sUserID;
 		identifyInfo.m_nIsDentify = 0;
 		if (!CDBOpeartor::instance()->addUserIdentify(identifyInfo, 1) ||
 			!CCacheUserAllInfo::instance()->addUserIdentifyCache(identifyInfo, 1))
 		{
-			//·´À¡Êı¾İ¿â²Ù×÷Ê§°Ü
-			return m_pUserManagerSPI->OnAddChildAgent(ERR_DB_OPERATOR, "²Ù×÷Êı¾İ¿âÊ§°Ü", users, userShip, m_sessionUserID);
+			m_errMsg = "æ“ä½œæ•°æ®åº“å¤±è´¥";
+			return m_pUserManagerSPI->OnAddChildAgent(ERR_DB_OPERATOR, "æ“ä½œæ•°æ®åº“å¤±è´¥", users, userShip, m_sessionUserID);
 		}
 
-		// Ìí¼ÓÒ»Ìõ»ú¹¹Ó¶½ğĞÅÏ¢
-		// Ìí¼ÓÓ¶½ğĞÅÏ¢Êı¾İ¿âºÍ»º´æ
-
-
-		//·´À¡Ìí¼Ó´úÀí³É¹¦
-		std::cout << "Ìí¼Ó´úÀíÉÌ³É¹¦" << endl;
-		m_pUserManagerSPI->OnAddChildAgent(0, "ÕıÈ·", users, userShip, m_sessionUserID);
+		// æ·»åŠ ä¸€æ¡æœºæ„ä½£é‡‘ä¿¡æ¯
+		if (!m_pUserManagerSPI->AddCommissionInfo(users.m_sUserID))
+		{
+			m_errMsg = "æ“ä½œæ•°æ®åº“å¤±è´¥";
+			return m_pUserManagerSPI->OnAddChildAgent(ERR_DB_OPERATOR, "æ“ä½œæ•°æ®åº“å¤±è´¥", users, userShip, m_sessionUserID);
+		}
+			
+		//åé¦ˆæ·»åŠ ä»£ç†æˆåŠŸ
+		m_pUserManagerSPI->OnAddChildAgent(0, "æ­£ç¡®", users, userShip, m_sessionUserID);
 	}
 
 private:
 	Json::Value m_info;
 	std::string m_sessionUserID;
 	PUserManagerSPI m_pUserManagerSPI;
+	std::string m_errMsg;
 };
 
