@@ -6,8 +6,7 @@
 #include <map>
 
 #include "common/net/NetBaseDef.h"
-#include "common/net/NetCommandCode.h"
-#include "EchoHandle/echoHandle.h"
+//#include "common/net/NetCommandCode.h"
 
 class CTcpHandler{
 

@@ -1,5 +1,7 @@
 #include <iostream>
+
 #include "echoHandle.h"
+#include "common/net/NetCommandCode.h"
 
 bool CEchoTcpHandle::Handle(const std::string& content, std::string& response) {
 	response = "ECHO_HELLO_WORLD";

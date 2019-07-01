@@ -1,4 +1,5 @@
 #include "TcpHandle.h"
+#include "EchoHandle/echoHandle.h"
 
 void CTcpHandler::SetTcpHandle(){
 	CEchoTcpHandle ce;

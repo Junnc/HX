@@ -3,6 +3,7 @@ CFLAGS = -Wall -O2 -std=c++11
 SRCS = 
 OBJS =
 
+INCLUDE = -I ./src/common
 HXLIBPATH = -L ./lib -L /usr/lib64/mysql/
 LIBS = $(wildcard lib/*.so)
 HXLIBS = $(patsubst lib/lib%.so, -l%, $(LIBS))
@@ -28,7 +29,7 @@ mc:
 	@ $(foreach n,  $(Modules), $(call sub_clean, $(n)))
 
 $(TARGET): src/hx.cpp mm
-	 $(CXX) $< -o $(TARGET) $(HXLIBPATH) $(HXLIBS) $(DEPLIBS) 
+	 $(CXX) $(CFLAGS) $(INCLUDE) $< -o $(TARGET) $(HXLIBPATH) $(HXLIBS) $(DEPLIBS) 
 	
 test:
 	# modules test

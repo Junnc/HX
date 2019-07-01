@@ -4,7 +4,6 @@
 #include <map>
 
 #include "common/net/NetBaseDef.h"
-#include "common/net/NetCommandCode.h"
 
 class CEchoTcpHandle{
 public:
