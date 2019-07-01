@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <map>
 #include <string>
 #include "TableFeild_define.h"
@@ -10,13 +10,36 @@
 #include "UserManagerAPI.h"
 #include "errCodeDef.h"
 #include "AuthrityControl.h"
+#include "PrintLogMessage.h"
+
 
 class CChildAccountAdd
 {
 public:
 	CChildAccountAdd(Json::Value root, std::string sessionUserID, PUserManagerSPI pUserManagerSPI) :
-		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI) {}
+		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI), m_errMsg(""){}
+	~CChildAccountAdd()
+	{
+		Json::FastWriter wts;
+		std::string msg = wts.write(m_info);
+		int nLogType = 0;
+		msg.replace(msg.find("\n"), 1, "");
+		if (m_errMsg.empty())
+		{
+			msg.append("==> Success");
+			nLogType = LogType::LOG_INFO;
+		}
+		else
+		{
+			msg.append("==> Fail:");
+			nLogType = LogType::LOG_ERR;
 
+		}
+		
+		msg.append(m_errMsg);
+		std::cout << msg << std::endl;
+		CPrintLogMessage plm(msg, nLogType, "[CMDChildAccountAdd]");
+	}
 	void handle()
 	{
 		try
@@ -24,29 +47,30 @@ public:
 			userInfos tmp;
 			userRelationShip userShip;
 			addChildAccTranslate(tmp, userShip);
-			//¼ì²âÍ¨ĞÅÊÇ·ñºÏ·¨
-			if (!CAuthrityControl::instance()->IsAgentIDConnectNormal(userShip.sInstitutionID,m_sessionUserID))
+			//æ£€æµ‹é€šä¿¡æ˜¯å¦åˆæ³•
+			if (!CAuthrityControl::instance()->IsAgentIDConnectNormal(userShip.sInstitutionID,m_sessionUserID,m_pUserManagerSPI))
 			{
 				Json::Value rootValue;
 				rootValue[ERRCODE] = CHILD_ACCOUNT_ADD_RSP;
-				rootValue[ERRMSG] = "²»ºÏ·¨µÄÖ¸Áî";
+				rootValue[ERRMSG] = "ä¸åˆæ³•çš„æŒ‡ä»¤";
 				rootValue[CONTENT] = "";
 
 				Json::FastWriter writer;
-				std::string content = writer.write(rootValue);
-				return m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(content, m_sessionUserID);
+				m_errMsg = writer.write(rootValue);
+				return m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(m_errMsg, m_sessionUserID);
 			}
 
-			//Ìí¼Ó×ÓÕË»§
+			//æ·»åŠ å­è´¦æˆ·
 			std::string uuid = UUID::getUUid();
-			tmp.m_sUserID = uuid;  //»ñÈ¡uuid
-			userShip.sUserID = uuid;//Í¬ÉÏÒ»¸öuuid
+			tmp.m_sUserID = uuid;  //è·å–uuid
+			userShip.sUserID = uuid;//åŒä¸Šä¸€ä¸ªuuid
 
 			addChildaccount(tmp, userShip);
 		}
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
+			m_errMsg = e.what();
 		}
 	}
 
@@ -55,7 +79,7 @@ private:
 	void addChildAccTranslate(userInfos& tmp,userRelationShip& userShip)
 	{	
 		tmp.m_nUserType = m_info[usrType].asInt();
-		tmp.m_nLevel = m_info[level].asInt();
+		tmp.m_nLevel = m_info[levels].asInt();
 		tmp.m_sLoginName = m_info[loginName].asString();
 		tmp.m_sAccountName = m_info[accountName].asString();
 		tmp.m_sPassword = m_info[passwords].asString();
@@ -74,64 +98,63 @@ private:
 
 	void addChildaccount(userInfos& tmp, userRelationShip& userShip)
 	{
-		//¼ì²âÕË»§Ãû²»ÄÜÓĞÖĞÎÄ
+		//æ£€æµ‹è´¦æˆ·åä¸èƒ½æœ‰ä¸­æ–‡
 		if (UtilityFun::isChineseString(tmp.m_sLoginName))
 		{
-			//·´À¡ÓÃ»§´íÎó  ÓĞÖĞÎÄ
-			std::cout << "µÇÂ¼ÃûÓĞÖĞÎÄ" << std::endl;
-			return m_pUserManagerSPI->OnAddChildAccount(ERR_ACCOUNT_CHINESE, "ÕË»§Ãû²»ÄÜº¬ÓĞÖĞÎÄ", tmp, userShip, m_sessionUserID);
+			//åé¦ˆç”¨æˆ·é”™è¯¯  æœ‰ä¸­æ–‡
+			m_errMsg = "è´¦æˆ·åä¸èƒ½å«æœ‰ä¸­æ–‡";
+			return m_pUserManagerSPI->OnAddChildAccount(ERR_ACCOUNT_CHINESE, "è´¦æˆ·åä¸èƒ½å«æœ‰ä¸­æ–‡", tmp, userShip, m_sessionUserID);
 		}
 
-		//ÕË»§ÊÇ·ñÒÑ´æÔÚ
+		//è´¦æˆ·æ˜¯å¦å·²å­˜åœ¨
 		if (CCacheUserAllInfo::instance()->IsUserExist(tmp.m_sLoginName))
 		{
-			//·´À¡ÓÃ»§´íÎó  ÕË»§ÃûÒÑ´æÔÚ
-			std::cout << "¸ÃµÇÂ¼ÃûÒÑ´æÔÚ" << std::endl;
-			return m_pUserManagerSPI->OnAddChildAccount(ERR_ACCOUNT_ALREADY_EXIST, "ÕË»§ÃûÒÑ´æÔÚ", tmp, userShip, m_sessionUserID);
+			//åé¦ˆç”¨æˆ·é”™è¯¯  è´¦æˆ·åå·²å­˜åœ¨
+			m_errMsg = "è´¦æˆ·åå·²å­˜åœ¨";
+			return m_pUserManagerSPI->OnAddChildAccount(ERR_ACCOUNT_ALREADY_EXIST, "è´¦æˆ·åå·²å­˜åœ¨", tmp, userShip, m_sessionUserID);
 		}
 		
 
-		//ÊÇ·ñ´ïµ½×î´ó¸öÊı
+		//æ˜¯å¦è¾¾åˆ°æœ€å¤§ä¸ªæ•°
 		int curNum = 0;
 		int rlt = CCacheUserAllInfo::instance()->getMaxChildNumber(userShip.sInstitutionID, curNum);
 		if (-1 == rlt)
 		{
-			//²»´æÔÚ´Ë»ú¹¹
-			std::cout << "´Ë»ú¹¹²»´æÔÚ" << std::endl;
-			return m_pUserManagerSPI->OnAddChildAccount(ERR_DB_OPERATOR, "Êı¾İ¿â²Ù×÷Ê§°Ü£¬²»´æÔÚµÄ»ú¹¹", tmp, userShip, m_sessionUserID);
+			//ä¸å­˜åœ¨æ­¤æœºæ„
+			m_errMsg = "æ•°æ®åº“æ“ä½œå¤±è´¥ï¼Œä¸å­˜åœ¨çš„æœºæ„";
+			return m_pUserManagerSPI->OnAddChildAccount(ERR_DB_OPERATOR, "æ•°æ®åº“æ“ä½œå¤±è´¥ï¼Œä¸å­˜åœ¨çš„æœºæ„", tmp, userShip, m_sessionUserID);
 		}
 		else if(-2 == rlt)
 		{
-			//Ìí¼Ó×ÓÕË»§ÒÑÂú
-			std::cout << "×ÓÕË»§ÊıÒÑÂú" << std::endl;
-			return m_pUserManagerSPI->OnAddChildAccount(ERR_ADDCHILDACC_MAX, "Ìí¼Ó×ÓÕË»§ÒÑ´ï×î´óÖµ", tmp, userShip, m_sessionUserID);
+			//æ·»åŠ å­è´¦æˆ·å·²æ»¡
+			m_errMsg = "æ·»åŠ å­è´¦æˆ·å·²è¾¾æœ€å¤§å€¼";
+			return m_pUserManagerSPI->OnAddChildAccount(ERR_ADDCHILDACC_MAX, "æ·»åŠ å­è´¦æˆ·å·²è¾¾æœ€å¤§å€¼", tmp, userShip, m_sessionUserID);
 		}
 
-		//Ìí¼ÓÊı¾İ¿â
+		//æ·»åŠ æ•°æ®åº“
 		if (!CDBOpeartor::instance()->addChildAccount(tmp, userShip) ||
 			!CCacheUserAllInfo::instance()->addUserAndRelationShipCache(tmp, userShip))
 		{
-			//Ìí¼ÓÊı¾İ¿âÊ§°Ü£¬·´À¡¿Í»§¶Ë
-			std::cout << "Ìí¼ÓÊı¾İ¿âuserÊ§°Ü" << std::endl;
-			return m_pUserManagerSPI->OnAddChildAccount(ERR_DB_OPERATOR, "²Ù×÷Êı¾İ¿âÊ§°Ü", tmp, userShip, m_sessionUserID);
+			//æ·»åŠ æ•°æ®åº“å¤±è´¥ï¼Œåé¦ˆå®¢æˆ·ç«¯
+			m_errMsg = "æ“ä½œæ•°æ®åº“userå¤±è´¥";
+			return m_pUserManagerSPI->OnAddChildAccount(ERR_DB_OPERATOR, "æ“ä½œæ•°æ®åº“å¤±è´¥", tmp, userShip, m_sessionUserID);
 		}
 
 
-		//Ìí¼Óuser_money_info
+		//æ·»åŠ user_money_info
 		userMoneyInfo usrMoney;
 		usrMoney.m_sUserID = tmp.m_sUserID;
 		if (!CDBOpeartor::instance()->addUserMoneyInfo(usrMoney))
 		{
-			//Ìí¼ÓÊı¾İ¿âuser_money_infoÊ§°Ü£¬·´À¡¿Í»§¶Ë
-			std::cout << "Ìí¼ÓÊı¾İ¿âmoneyÊ§°Ü" << std::endl;
-			return m_pUserManagerSPI->OnAddChildAccount(ERR_DB_OPERATOR, "²Ù×÷Êı¾İ¿âÊ§°Ü", tmp, userShip, m_sessionUserID);
+			//æ·»åŠ æ•°æ®åº“user_money_infoå¤±è´¥ï¼Œåé¦ˆå®¢æˆ·ç«¯
+			m_errMsg = "æ“ä½œæ•°æ®åº“moneyå¤±è´¥";
+			return m_pUserManagerSPI->OnAddChildAccount(ERR_DB_OPERATOR, "æ“ä½œæ•°æ®åº“å¤±è´¥", tmp, userShip, m_sessionUserID);
 		}
 		CCacheUserAllInfo::instance()->addUserMoneyinfoCache(usrMoney);
 
-		m_pUserManagerSPI->OnAddChildAccount(0, "ÕıÈ·", tmp, userShip, m_sessionUserID);
+		m_pUserManagerSPI->OnAddChildAccount(0, "æ­£ç¡®", tmp, userShip, m_sessionUserID);
 		
-		std::cout << "Ìí¼Ó×ÓÕË»§³É¹¦" << std::endl;
-		m_pUserManagerSPI->OnAddChildAccPush(0, "ÕıÈ·", tmp, userShip, m_sessionUserID);
+		m_pUserManagerSPI->OnAddChildAccPush(0, "æ­£ç¡®", tmp, userShip, m_sessionUserID);
 	}
 
 private:
@@ -139,4 +162,5 @@ private:
 	Json::Value m_info;
 	std::string m_sessionUserID;
 	PUserManagerSPI m_pUserManagerSPI;
+	std::string m_errMsg;
 };

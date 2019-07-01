@@ -22,10 +22,10 @@ public:
 private:
 
 	//user_identify_info
-	void addUserIdentifyBank(std::string sessionUserID, std::map<string, string>& root);
+	/*void addUserIdentifyBank(std::string sessionUserID, std::map<string, string>& root);
 	void addUserIdentifyTranslate(std::map<string, string>& root, userIdentify& usrIdentify,int nflag);
 	void CertifitionRegRecTranslate(std::map<string, string>& root, certificationRegisterRecordInfo& cer);
-	void addUserIdentifyAuthenticate(std::string sessionUserID, std::map<string, string>& root);
+	void addUserIdentifyAuthenticate(std::string sessionUserID, std::map<string, string>& root);*/
 
 private:
 	PUserManagerSPI m_pUserManagerSPI;

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <map>
 #include <string>
 #include "TableFeild_define.h"
@@ -11,13 +11,36 @@
 #include "errCodeDef.h"
 #include "AuthrityControl.h"
 #include "GlobalParamLogRecord.h"
+#include "PrintLogMessage.h"
 
 class CChildAccountUpdate
 {
 public:
 	CChildAccountUpdate(Json::Value root, std::string sessionUserID, PUserManagerSPI pUserManagerSPI) :
-		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI) {}
+		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI),m_errMsg("") {}
 
+	~CChildAccountUpdate()
+	{
+		Json::FastWriter wts;
+		std::string msg = wts.write(m_info);
+		int nLogType = 0;
+		msg.replace(msg.find("\n"), 1, "");
+		if (m_errMsg.empty())
+		{
+			msg.append("==> Success");
+			nLogType = LogType::LOG_INFO;
+		}
+		else
+		{
+			msg.append("==> Fail:");
+			nLogType = LogType::LOG_ERR;
+
+		}
+		
+		msg.append(m_errMsg);
+		std::cout << msg << std::endl;
+		CPrintLogMessage plm(msg, nLogType, "[CMDChildAccountUpdate]");
+	}
 	void handle()
 	{
 		try
@@ -25,57 +48,62 @@ public:
 			userInfos tmp;
 			userRelationShip userShip;
 			TranslateStruct(tmp, userShip);
-			//¼ì²âÁ¬½ÓÊÇ·ñºÏ·¨
-			if (!CAuthrityControl::instance()->IsAgentIDConnectNormal(userShip.sInstitutionID,m_sessionUserID))
+			//æ£€æµ‹è¿æ¥æ˜¯å¦åˆæ³•
+			if (!CAuthrityControl::instance()->IsAgentIDConnectNormal(userShip.sInstitutionID,m_sessionUserID,m_pUserManagerSPI))
 			{
 				Json::Value rootValue;
 				rootValue[ERRCODE] = CHILD_ACCOUNT_QUERY_RSP;
-				rootValue[ERRMSG] = "²»ºÏ·¨µÄÖ¸Áî";
+				rootValue[ERRMSG] = "ä¸åˆæ³•çš„æŒ‡ä»¤";
 				rootValue[CONTENT] = "";
 
 				Json::FastWriter writer;
-				std::string content = writer.write(rootValue);
-				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(content, m_sessionUserID);
+				m_errMsg = writer.write(rootValue);
+				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(m_errMsg, m_sessionUserID);
 				return;
 			}
 
-			//²ÎÊıÑéÖ¤
+			//å‚æ•°éªŒè¯
 			userRelationShip old_usership;
 			if (!CCacheUserAllInfo::instance()->selectUsersOne(tmp.m_sUserID, old_usership))
 			{
-				//¸Ã×ÓÕË»§²»´æÔÚ  ·´À¡ÏûÏ¢¸øµÇÂ¼¶Ë
-				return m_pUserManagerSPI->OnUpdateChildAccount(ERR_USER_NOEXIST, "ÕË»§²»´æÔÚ", old_usership.sRiskModuleID, tmp, old_usership, m_sessionUserID);
+				m_errMsg = "è´¦æˆ·ä¸å­˜åœ¨";
+				return m_pUserManagerSPI->OnUpdateChildAccount(ERR_USER_NOEXIST, "è´¦æˆ·ä¸å­˜åœ¨", old_usership.sRiskModuleID, tmp, old_usership, m_sessionUserID);
 			}
 
-			//ĞŞ¸Ä×ÓÕË»§µÄÖ÷ÕË»§Ê±ÅĞ¶ÏÊÇ·ñÓĞ³Ö²Ö
+			//ä¿®æ”¹å­è´¦æˆ·çš„ä¸»è´¦æˆ·æ—¶åˆ¤æ–­æ˜¯å¦æœ‰æŒä»“
 			if (old_usership.sMainID != userShip.sMainID)
 			{
-				//´ı´¦Àí ÓĞÎŞ³Ö²Ö
-				//return;
+				if (m_pUserManagerSPI->IsHoldPosition(userShip.sUserID))
+				{
+					m_errMsg = "å­è´¦æˆ·å­˜åœ¨æŒä»“";
+					return m_pUserManagerSPI->OnUpdateChildAccount(ERR_CHILDACC_POSITION_EXIST, "å­è´¦æˆ·å­˜åœ¨æŒä»“", old_usership.sRiskModuleID, tmp, old_usership, m_sessionUserID);
+				}
 			}
 
 			
-			//¸üĞÂÊı¾İ¿â ºÍ»º´æ
+			//æ›´æ–°æ•°æ®åº“ å’Œç¼“å­˜
 			if (!CDBOpeartor::instance()->updateChildAccount(tmp, userShip) ||
 				!CCacheUserAllInfo::instance()->updateUsersAndRelationShip(tmp, userShip))
 			{
+				m_errMsg = "æ“ä½œæ•°æ®åº“å¤±è´¥";
 				return;
 			}
-			m_pUserManagerSPI->OnUpdateChildAccount(0, "ÕıÈ·", old_usership.sRiskModuleID, tmp, userShip, m_sessionUserID);
+			m_pUserManagerSPI->OnUpdateChildAccount(0, "æ­£ç¡®", old_usership.sRiskModuleID, tmp, userShip, m_sessionUserID);
 
-			//´æ¸üĞÂ¼ÇÂ¼µ½ log_record ±í  ´ıÍê³É
+			//å­˜æ›´æ–°è®°å½•åˆ° log_record è¡¨  å¾…å®Œæˆ
 			userInfosPtr usrPtr = std::make_shared<userInfos>(tmp);
 			userRelationShipPtr shipPtr = std::make_shared<userRelationShip>(userShip);
-			GlobalParamsLogRecord::instance()->AccountManagerLogRecord("×ÓÕË»§¸üĞÂ",
+			GlobalParamsLogRecord::instance()->AccountManagerLogRecord("å­è´¦æˆ·æ›´æ–°",
 				GlobalParamsLogRecord::instance()->GetLogInfo(m_pUserManagerSPI, m_sessionUserID, OperatorObjType::OOT_CHILD_ACC), usrPtr, shipPtr, UsersType::USER_TRADER);
 			
 			
-			//·´À¡ĞÅÏ¢  ´ıÍê³É
-			m_pUserManagerSPI->OnAddChildAccPush(0, "ÕıÈ·", tmp, userShip, m_sessionUserID);
+			//åé¦ˆä¿¡æ¯  å¾…å®Œæˆ
+			m_pUserManagerSPI->OnAddChildAccPush(0, "æ­£ç¡®", tmp, userShip, m_sessionUserID);
 		}
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
+			m_errMsg = e.what();
 		}
 		
 	}
@@ -104,4 +132,5 @@ private:
 	Json::Value m_info;
 	std::string m_sessionUserID;
 	PUserManagerSPI m_pUserManagerSPI;
+	std::string m_errMsg;
 };

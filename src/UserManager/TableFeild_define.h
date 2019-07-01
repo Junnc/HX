@@ -12,7 +12,7 @@
 //user table
 #define		usrID				"userID"
 #define		usrType				"userType"
-#define		level				"level"
+#define		levels				"level"
 #define		loginName			"loginName"
 #define		accountName			"accountName"
 #define		passwords			"passwords"

@@ -1,10 +1,10 @@
 #include "UserManageCenter.h"
-//#include "DBConnPool.h"
 #include <iostream>
 #include "CacheUserAllInfo.h"
 #include "UserAccountDeal.h"
-//#include "TaskManager.h"
+#include "log4cxx/hx_log4cxx.h"
 
+NG_LOGGER(logger,"UserManageCerter");
 
 bool CUserManageCenter::init()
 {
@@ -21,33 +21,28 @@ bool CUserManageCenter::init()
 	if (!CDBOpeartor::instance()->init(dbinfo, nMaxSize, nMinSize))
 	{
 		std::cout << "init DBPool fail" << endl;
+		NG_LOG4CXX_ERROR(logger,"init DBPool fail");
 		return false;
 	}
-	std::cout << "init DBPool success" << endl;
 
 	//2.初始化缓存
 	if (!CCacheUserAllInfo::instance()->init())
 	{
 		std::cout << "init cache fail" << endl;
+		NG_LOG4CXX_ERROR(logger, "init cache fail");
 		return false;
 	}
-	std::cout << "init cache success" << endl;
 
-	//3.初始化任务池
-	/*if (!CTaskManager::instance()->init(5))
-	{
-		std::cout << "init Task threadpool fail" << endl;
-		return false;
-	}
-	std::cout << "init Task threadpool success" << endl;*/
 
 	if (!CCommandParseAndDeal::instance()->init(5))
 	{
 		std::cout << "init Task threadpool fail" << endl;
+		NG_LOG4CXX_ERROR(logger, "init Task threadpool fail");
 		return false;
 	}
-	std::cout << "init Task threadpool success" << endl;
 
+	std::cout << "init Success" << endl;
+	NG_LOG4CXX_INFO(logger, "init Success");
 	return true;
 }
 

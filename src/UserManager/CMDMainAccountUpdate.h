@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #pragma once
 #include <map>
 #include <string>
@@ -12,42 +12,64 @@
 #include "GlobalParamLogRecord.h"
 #include "errCodeDef.h"
 #include "AuthrityControl.h"
+#include "PrintLogMessage.h"
 
 class CMainAccountUpdate
 {
 public:
 	CMainAccountUpdate(Json::Value root, std::string sessionUserID, PUserManagerSPI pUserManagerSPI) :
-		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI) {}
+		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI),m_errMsg("") {}
 
+	~CMainAccountUpdate()
+	{
+		Json::FastWriter wts;
+		std::string msg = wts.write(m_info);
+		int nLogType = 0;
+		msg.replace(msg.find("\n"), 1, "");
+		if (m_errMsg.empty())
+		{
+			msg.append("==> Success");
+			nLogType = LogType::LOG_INFO;
+		}
+		else
+		{
+			msg.append("==> Fail:");
+			nLogType = LogType::LOG_ERR;
+
+		}
+		
+		msg.append(m_errMsg);
+		std::cout << msg << std::endl;
+		CPrintLogMessage plm(msg, nLogType, "[CMDMainAccountUpdate]");
+	}
 	void handle()
 	{
 		try
 		{
-			std::cout << "  26 " << std::endl;
 			userInfos uInfo;
 			userRelationShip usrShip;
 			TranslateToStruct(uInfo, usrShip);
 
-			std::cout << "  30 " << std::endl;
 			int nRes = 0;
 			if (!CDBOpeartor::instance()->updateMainAccount(uInfo, usrShip) ||
 				!CCacheUserAllInfo::instance()->updateMainAccount(uInfo))
 			{
+				m_errMsg = "æ•°æ®åº“æ“ä½œå¤±è´¥";
 				nRes = -1;
 			}
-			std::cout << "  37 " << std::endl;
-			//¸üĞÂÊı¾İ¿â±£´æ ÈÕÖ¾¼ÇÂ¼   log_record
+			
+			//æ›´æ–°æ•°æ®åº“ä¿å­˜ æ—¥å¿—è®°å½•   log_record
 			userInfosPtr usrPtr = std::make_shared<userInfos>(uInfo);
 			userRelationShipPtr shipPtr = std::make_shared<userRelationShip>(usrShip);
-			GlobalParamsLogRecord::instance()->AccountManagerLogRecord("Ö÷ÕË»§ĞŞ¸Ä", GlobalParamsLogRecord::instance()->GetLogInfo(m_pUserManagerSPI, m_sessionUserID, OperatorObjType::OOT_MAIN_ACC), usrPtr, shipPtr, UsersType::USER_MONEYACC);
-			//·´À¡Êı¾İ¿â²Ù×÷½á¹û ¼° ¸üĞÂÊı¾İ
-			std::cout << "Ö÷ÕË»§¸üĞÂ³É¹¦" << endl;
+			GlobalParamsLogRecord::instance()->AccountManagerLogRecord("ä¸»è´¦æˆ·ä¿®æ”¹", GlobalParamsLogRecord::instance()->GetLogInfo(m_pUserManagerSPI, m_sessionUserID, OperatorObjType::OOT_MAIN_ACC), usrPtr, shipPtr, UsersType::USER_MONEYACC);
+			//åé¦ˆæ•°æ®åº“æ“ä½œç»“æœ åŠ æ›´æ–°æ•°æ®
 			m_pUserManagerSPI->OnUpdateMainAccount(nRes, uInfo, usrShip,m_sessionUserID);
 			return;
 		}
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
+			m_errMsg = e.what();
 		}
 		
 	}
@@ -55,7 +77,6 @@ public:
 private:
 	void TranslateToStruct(userInfos& uInfo, userRelationShip& usrShip)
 	{
-		std::cout << " TranslateToStruct 56 " << std::endl;
 		uInfo.m_sUserID			= m_info[usrID].asString();
 		uInfo.m_sLoginName		= m_info[loginName].asString();
 		uInfo.m_sPassword		= m_info[passwords].asString();
@@ -69,4 +90,5 @@ private:
 	Json::Value m_info;
 	std::string m_sessionUserID;
 	PUserManagerSPI m_pUserManagerSPI;
+	std::string m_errMsg;
 };

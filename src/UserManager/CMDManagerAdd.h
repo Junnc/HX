@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <map>
 #include <string>
 #include "TableFeild_define.h"
@@ -11,12 +11,35 @@
 #include "errCodeDef.h"
 #include "GlobalParamLogRecord.h"
 #include "AuthrityControl.h"
+#include "PrintLogMessage.h"
 
 class CManagerAdd
 {
 public:
 	CManagerAdd(Json::Value root, std::string sessionUserID, PUserManagerSPI pUserManagerSPI) :
-		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI) {}
+		m_info(root), m_sessionUserID(sessionUserID), m_pUserManagerSPI(pUserManagerSPI),m_errMsg("") {}
+	~CManagerAdd()
+	{
+		Json::FastWriter wts;
+		std::string msg = wts.write(m_info);
+		int nLogType = 0;
+		msg.replace(msg.find("\n"), 1, "");
+		if (m_errMsg.empty())
+		{
+			msg.append("==> Success");
+			nLogType = LogType::LOG_INFO;
+		}
+		else
+		{
+			msg.append("==> Fail:");
+			nLogType = LogType::LOG_ERR;
+
+		}
+		
+		msg.append(m_errMsg);
+		std::cout << msg << std::endl;
+		CPrintLogMessage plm(msg, nLogType, "[CMDManagerAdd]");
+	}
 
 	void handle()
 	{
@@ -26,18 +49,18 @@ public:
 			userRelationShip userShip;
 			addChildAccTranslate(tmp, userShip);
 
-			//¼ì²âÍ¨ÐÅÊÇ·ñºÏ·¨
-			if (!CAuthrityControl::instance()->IsAgentIDConnectNormal(userShip.sInstitutionID,m_sessionUserID))
+			//æ£€æµ‹é€šä¿¡æ˜¯å¦åˆæ³•
+			if (!CAuthrityControl::instance()->IsAgentIDConnectNormal(userShip.sInstitutionID,m_sessionUserID, m_pUserManagerSPI))
 			{
 
 				Json::Value rootValue;
 				rootValue[ERRCODE] = -1;
-				rootValue[ERRMSG] = "²»ºÏ·¨µÄÖ¸Áî";
+				rootValue[ERRMSG] = "ä¸åˆæ³•çš„æŒ‡ä»¤";
 				rootValue[CONTENT] = "";
 
 				Json::FastWriter writer;
-				std::string content = writer.write(rootValue);
-				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(content, m_sessionUserID);
+				m_errMsg = writer.write(rootValue);
+				m_pUserManagerSPI->OnConnectAhturityLegitimacyInfo(m_errMsg, m_sessionUserID);
 				return;
 			}
 
@@ -48,6 +71,7 @@ public:
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << endl;
+			m_errMsg = e.what();
 		}
 		
 	}
@@ -59,7 +83,7 @@ private:
 
 		tmp.m_sUserID		= m_info[usrID].asString();
 		tmp.m_nUserType		= UsersType::USER_MANAGER;
-		tmp.m_nLevel		= m_info[level].asInt();
+		tmp.m_nLevel		= m_info[levels].asInt();
 		tmp.m_sLoginName	= m_info[loginName].asString();
 		tmp.m_sAccountName	= m_info[accountName].asString();
 		tmp.m_sPassword		= m_info[passwords].asString();
@@ -75,39 +99,36 @@ private:
 
 	void addManager(userInfos& tmp, userRelationShip& userShip)
 	{
-		//¼ì²âÕË»§Ãû²»ÄÜÓÐÖÐÎÄ
+		//æ£€æµ‹è´¦æˆ·åä¸èƒ½æœ‰ä¸­æ–‡
 		if (UtilityFun::isChineseString(tmp.m_sLoginName))
 		{
-			//·´À¡ÓÃ»§´íÎó  ÓÐÖÐÎÄ
-			std::cout << "ÓÃ»§ÃûÓÐÖÐÎÄ" << endl;
-			return m_pUserManagerSPI->OnAddManagerAccount(ERR_ACCOUNT_CHINESE, "ÕË»§Ãû²»ÄÜ°üº¬ÖÐÎÄ", tmp, userShip, m_sessionUserID);
+			m_errMsg = "è´¦æˆ·åä¸èƒ½åŒ…å«ä¸­æ–‡";
+			return m_pUserManagerSPI->OnAddManagerAccount(ERR_ACCOUNT_CHINESE, "è´¦æˆ·åä¸èƒ½åŒ…å«ä¸­æ–‡", tmp, userShip, m_sessionUserID);
 		}
-		//ÕË»§ÊÇ·ñÒÑ´æÔÚ
+		//è´¦æˆ·æ˜¯å¦å·²å­˜åœ¨
 		if (CCacheUserAllInfo::instance()->IsUserExist(tmp.m_sLoginName))
 		{
-			//·´À¡ÓÃ»§´íÎó  ÕË»§ÃûÒÑ´æÔÚ
-			std::cout << "ÓÃ»§ÃûÒÑ´æÔÚ" << endl;
-			return m_pUserManagerSPI->OnAddManagerAccount(ERR_ACCOUNT_ALREADY_EXIST, "ÕË»§ÃûÒÑ´æÔÚ", tmp, userShip, m_sessionUserID);
+			m_errMsg = "è´¦æˆ·åå·²å­˜åœ¨";
+			return m_pUserManagerSPI->OnAddManagerAccount(ERR_ACCOUNT_ALREADY_EXIST, "è´¦æˆ·åå·²å­˜åœ¨", tmp, userShip, m_sessionUserID);
 		}
 
-		//Ìí¼ÓÊý¾Ý¿â
+		//æ·»åŠ æ•°æ®åº“
 		if (!CDBOpeartor::instance()->addManager(tmp, userShip))
 		{
-			//Ìí¼ÓÊý¾Ý¿âÊ§°Ü£¬·´À¡¿Í»§¶Ë
-			std::cout << "Ìí¼Ó¹ÜÀíÔ±Êý¾Ý¿âÊ§°Ü" << endl;
-			return m_pUserManagerSPI->OnAddManagerAccount(ERR_DB_OPERATOR, "²Ù×÷Êý¾Ý¿âÊ§°Ü", tmp, userShip, m_sessionUserID);
+			m_errMsg = "æ“ä½œæ•°æ®åº“å¤±è´¥";
+			return m_pUserManagerSPI->OnAddManagerAccount(ERR_DB_OPERATOR, "æ“ä½œæ•°æ®åº“å¤±è´¥", tmp, userShip, m_sessionUserID);
 		}
-		//Ìí¼Ó»º´æ
+		//æ·»åŠ ç¼“å­˜
 		CCacheUserAllInfo::instance()->addUserAndRelationShipCache(tmp, userShip);
 
-		//·´À¡ ²Ù×÷³É¹¦
-		std::cout << "Ìí¼Ó¹ÜÀíÔ±³É¹¦" << endl;
-		m_pUserManagerSPI->OnAddManagerAccount(0, "ÕýÈ·", tmp, userShip, m_sessionUserID);
+		//åé¦ˆ æ“ä½œæˆåŠŸ
+		m_pUserManagerSPI->OnAddManagerAccount(0, "æ­£ç¡®", tmp, userShip, m_sessionUserID);
 	}
 
 private:
 	Json::Value m_info;
 	std::string m_sessionUserID;
 	PUserManagerSPI m_pUserManagerSPI;
+	std::string m_errMsg;
 };
 
