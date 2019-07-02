@@ -1,5 +1,5 @@
 CXX = g++
-CFLAGS = -Wall -O2 -std=c++11
+CFLAGS = -Wall -O2 -std=c++11 -g
 HXBASE = $(shell cd ../..; pwd)
 HXSRC = $(HXBASE)/src
 HXLIB = $(HXBASE)/lib

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <memory>
 
 #include <hpsocket/HPSocket.h> 
 #include <hpsocket/HPSocket-SSL.h> 
@@ -53,3 +54,5 @@ public:
 	// heartbeat filed times
 	int m_heartBeatFiled;
 };
+
+typedef std::shared_ptr<CWSClientEngine> CWSClientEnginePtr;

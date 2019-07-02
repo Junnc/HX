@@ -138,7 +138,7 @@ void CWSClientEngine::handle(const std::string& content){
 	if (!reader.parse(content, rootValue)) {
 		return;
 	}
-	std::cout<< content << std::endl;
+	//std::cout<< content << std::endl;
 	// TODO
 	// handle quotation
 }

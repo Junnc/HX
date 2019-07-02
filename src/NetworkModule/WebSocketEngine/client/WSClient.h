@@ -72,7 +72,9 @@ private:
 	const int m_serverPort;
 
 	// ws engine & client ptr;
-	std::shared_ptr<CWSClientEngine> m_engine;
+	CWSClientEnginePtr m_engine;
 	std::shared_ptr<CHttpClientPtr> m_pClient;
 
 };
+
+typedef std::shared_ptr<CWSClient> CWSClientPtr;
